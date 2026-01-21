@@ -11,6 +11,7 @@ import 'package:share_plus/share_plus.dart';
 import '../blocs/stats_cubit.dart';
 import '../blocs/category_cubit.dart';
 import '../../data/models/category_model.dart';
+import '../../data/services/pdf_service.dart';
 
 class MonthlyReportScreen extends StatelessWidget {
   const MonthlyReportScreen({super.key});
@@ -93,17 +94,51 @@ class MonthlyReportScreen extends StatelessWidget {
         title: const Text('Insights'),
         elevation: 0,
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(Icons.share),
-            onPressed: () {
+            onSelected: (value) async {
               if (stats.expenses.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('No data to export')),
                 );
                 return;
               }
-              _exportData();
+
+              if (value == 'csv') {
+                await _exportData();
+              } else if (value == 'pdf') {
+                await PdfService.generateAndShareReport(
+                  title: _getTitle(),
+                  expenses: stats.expenses,
+                  categories: categories,
+                  totalIncome: stats.totalIncome,
+                  totalSpent: stats.totalSpent,
+                  netBalance: stats.netBalance,
+                );
+              }
             },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'csv',
+                child: Row(
+                  children: [
+                    Icon(Icons.table_chart, size: 20),
+                    Gap(12),
+                    Text('Export as CSV'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'pdf',
+                child: Row(
+                  children: [
+                    Icon(Icons.picture_as_pdf, size: 20),
+                    Gap(12),
+                    Text('Export as PDF'),
+                  ],
+                ),
+              ),
+            ],
           ),
           IconButton(
             icon: const Icon(Icons.calendar_today),
