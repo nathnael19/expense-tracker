@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 import '../blocs/expense_cubit.dart';
 import '../blocs/category_cubit.dart';
 import '../blocs/stats_cubit.dart';
-import '../blocs/theme_cubit.dart';
 import '../blocs/budget_cubit.dart';
 import '../widgets/summary_card.dart';
 import 'add_expense_screen.dart';
@@ -27,7 +26,6 @@ class HomeScreen extends StatelessWidget {
     final expenseState = context.watch<ExpenseCubit>().state;
     final categories = context.watch<CategoryCubit>().state;
     final statsState = context.watch<StatsCubit>().state;
-    final themeMode = context.watch<ThemeCubit>().state;
     final budgetState = context.watch<BudgetCubit>().state;
 
     final todaysTotal = expenseState.todaysTotal;

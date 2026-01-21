@@ -36,7 +36,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final settingsState = context.watch<SettingsCubit>().state;
-    final isLocked = settingsState.isAppLockEnabled;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings'), elevation: 0),
@@ -92,6 +91,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(),
 
+          const Divider(),
+
+          // Notifications Section
+          _buildSectionHeader('Notifications'),
+          SwitchListTile(
+            secondary: const Icon(Icons.notifications_active_outlined),
+            title: const Text('Daily Reminders'),
+            subtitle: const Text('Get reminded to log your expenses'),
+            value: settingsState.reminderEnabled,
+            onChanged: (val) {
+              context.read<SettingsCubit>().toggleReminder(val);
+            },
+          ),
+          if (settingsState.reminderEnabled)
+            ListTile(
+              leading: const Icon(Icons.access_time),
+              title: const Text('Reminder Time'),
+              subtitle: Text(settingsState.reminderTime.format(context)),
+              trailing: const Icon(Icons.edit, size: 16),
+              onTap: () async {
+                final picked = await showTimePicker(
+                  context: context,
+                  initialTime: settingsState.reminderTime,
+                );
+                if (picked != null) {
+                  context.read<SettingsCubit>().updateReminderTime(picked);
+                }
+              },
+            ),
+
+          const Divider(),
+
           // Security Section
           _buildSectionHeader('Security'),
           if (_biometricsAvailable)
@@ -99,7 +130,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               secondary: const Icon(Icons.fingerprint),
               title: const Text('App Lock'),
               subtitle: const Text('Require authentication on launch'),
-              value: isLocked,
+              value: settingsState.isAppLockEnabled,
               onChanged: (val) {
                 context.read<SettingsCubit>().toggleAppLock(val);
               },
