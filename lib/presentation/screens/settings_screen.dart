@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'category_management_screen.dart';
 import '../blocs/settings_cubit.dart';
+import '../blocs/theme_cubit.dart';
 import '../../data/services/backup_service.dart';
 import '../../data/services/security_service.dart';
 
@@ -57,6 +58,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
 
+          const Divider(),
+
+          // Appearance Section
+          _buildSectionHeader('Appearance'),
+          BlocBuilder<ThemeCubit, ThemeMode>(
+            builder: (context, themeMode) {
+              final isDark = themeMode == ThemeMode.dark;
+              return SwitchListTile(
+                secondary: Icon(isDark ? Icons.dark_mode : Icons.light_mode),
+                title: const Text('Dark Mode'),
+                subtitle: const Text('Toggle application theme'),
+                value: isDark,
+                onChanged: (val) {
+                  context.read<ThemeCubit>().toggleTheme(
+                    val ? ThemeMode.dark : ThemeMode.light,
+                  );
+                },
+              );
+            },
+          ),
           const Divider(),
 
           // Security Section

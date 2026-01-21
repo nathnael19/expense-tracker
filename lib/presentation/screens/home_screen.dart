@@ -78,17 +78,6 @@ class HomeScreen extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(
-              themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode,
-              color: isDarkMode ? Colors.amber : Colors.black87,
-            ),
-            onPressed: () {
-              context.read<ThemeCubit>().toggleTheme(
-                themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark,
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(
               Icons.bar_chart,
               color: isDarkMode ? Colors.white : Colors.black,
             ),
