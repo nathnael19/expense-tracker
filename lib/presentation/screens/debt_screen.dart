@@ -1,3 +1,4 @@
+import 'package:expense_tracker_offline/data/models/debt_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
@@ -14,7 +15,7 @@ class DebtScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Lending Manager'),
+          title: const Text('Debt Manager'),
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Active'),
@@ -32,7 +33,7 @@ class DebtScreen extends StatelessWidget {
               MaterialPageRoute(builder: (context) => const AddDebtScreen()),
             );
           },
-          label: const Text('Lend Money'),
+          label: const Text('Add Record'),
           icon: const Icon(Icons.add),
         ),
       ),
@@ -80,6 +81,10 @@ class _DebtList extends StatelessWidget {
           itemCount: list.length,
           itemBuilder: (context, index) {
             final debt = list[index];
+            final isLent = debt.type == DebtType.lent;
+            final color = isLent ? Colors.green : Colors.redAccent;
+            final bgColor = color.withOpacity(0.1);
+
             return Card(
               elevation: 2,
               margin: const EdgeInsets.only(bottom: 12),
@@ -89,15 +94,11 @@ class _DebtList extends StatelessWidget {
               child: ListTile(
                 contentPadding: const EdgeInsets.all(16),
                 leading: CircleAvatar(
-                  backgroundColor: isActive
-                      ? Colors.orange.withOpacity(0.2)
-                      : Colors.green.withOpacity(0.2),
-                  child: Text(
-                    debt.personName.characters.first.toUpperCase(),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: isActive ? Colors.orange[800] : Colors.green[800],
-                    ),
+                  backgroundColor: bgColor,
+                  child: Icon(
+                    isLent ? Icons.arrow_upward : Icons.arrow_downward,
+                    color: color,
+                    size: 20,
                   ),
                 ),
                 title: Text(
@@ -108,7 +109,7 @@ class _DebtList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Lent: ${DateFormat.yMMMd().format(debt.date)}',
+                      '${isLent ? 'Lent' : 'Borrowed'}: ${DateFormat.yMMMd().format(debt.date)}',
                       style: const TextStyle(fontSize: 12),
                     ),
                     if (debt.dueDate != null && isActive)
@@ -130,9 +131,10 @@ class _DebtList extends StatelessWidget {
                   children: [
                     Text(
                       'ETB ${debt.amount.toStringAsFixed(0)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        color: color,
                       ),
                     ),
                     const Gap(4),
@@ -147,12 +149,12 @@ class _DebtList extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.green,
+                            color: color,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text(
-                            'Mark Paid',
-                            style: TextStyle(
+                          child: Text(
+                            isLent ? 'Mark Paid' : 'Mark Repaid',
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -161,10 +163,10 @@ class _DebtList extends StatelessWidget {
                         ),
                       )
                     else
-                      const Text(
-                        'Paid',
+                      Text(
+                        isLent ? 'Paid' : 'Repaid',
                         style: TextStyle(
-                          color: Colors.green,
+                          color: color,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),

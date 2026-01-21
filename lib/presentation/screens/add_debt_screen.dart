@@ -20,6 +20,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   final _noteController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   DateTime? _dueDate;
+  DebtType _selectedType = DebtType.lent;
 
   @override
   void dispose() {
@@ -67,7 +68,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         date: _selectedDate,
         dueDate: _dueDate,
         note: _noteController.text.trim(),
-        type: DebtType.lent, // Defaulting to 'lent' as requested
+        type: _selectedType,
       );
 
       context.read<DebtCubit>().addDebt(newDebt);
@@ -77,8 +78,13 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLent = _selectedType == DebtType.lent;
+    final primaryColor = isLent ? Colors.green : Colors.redAccent;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Lending Record')),
+      appBar: AppBar(
+        title: Text(isLent ? 'Add Lending Record' : 'Add Borrowing Record'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Form(
@@ -86,10 +92,50 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Type Toggle
+              SegmentedButton<DebtType>(
+                segments: const [
+                  ButtonSegment(
+                    value: DebtType.lent,
+                    label: Text('I Lent'),
+                    icon: Icon(Icons.arrow_upward),
+                  ),
+                  ButtonSegment(
+                    value: DebtType.borrowed,
+                    label: Text('I Borrowed'),
+                    icon: Icon(Icons.arrow_downward),
+                  ),
+                ],
+                selected: {_selectedType},
+                onSelectionChanged: (newSelection) {
+                  setState(() {
+                    _selectedType = newSelection.first;
+                  });
+                },
+                style: ButtonStyle(
+                  side: MaterialStateProperty.all(
+                    BorderSide(color: primaryColor),
+                  ),
+                  foregroundColor: MaterialStateProperty.resolveWith((states) {
+                    if (states.contains(MaterialState.selected)) {
+                      return Colors.white;
+                    }
+                    return primaryColor;
+                  }),
+                  backgroundColor: MaterialStateProperty.resolveWith((states) {
+                    if (states.contains(MaterialState.selected)) {
+                      return primaryColor;
+                    }
+                    return null;
+                  }),
+                ),
+              ),
+              const Gap(24),
+
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
-                  labelText: 'Person Name',
+                  labelText: isLent ? 'Person Name' : 'Lender Name',
                   prefixIcon: const Icon(Icons.person_outline),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -107,7 +153,9 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                 controller: _amountController,
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                  labelText: 'Amount (ETB)',
+                  labelText: isLent
+                      ? 'Amount Lent (ETB)'
+                      : 'Amount Borrowed (ETB)',
                   prefixIcon: const Icon(Icons.attach_money),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -127,7 +175,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.calendar_today),
-                title: const Text('Date Lent'),
+                title: Text(isLent ? 'Date Lent' : 'Date Borrowed'),
                 subtitle: Text(DateFormat.yMMMd().format(_selectedDate)),
                 onTap: _pickDate,
                 trailing: const Icon(Icons.chevron_right),
@@ -169,6 +217,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
               FilledButton(
                 onPressed: _saveDebt,
                 style: FilledButton.styleFrom(
+                  backgroundColor: primaryColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
