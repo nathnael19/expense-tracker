@@ -7,7 +7,8 @@ import '../../data/models/debt_model.dart';
 import '../blocs/debt_cubit.dart';
 
 class AddDebtScreen extends StatefulWidget {
-  const AddDebtScreen({super.key});
+  final DebtModel? debt;
+  const AddDebtScreen({super.key, this.debt});
 
   @override
   State<AddDebtScreen> createState() => _AddDebtScreenState();
@@ -18,9 +19,25 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   final _nameController = TextEditingController();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+  late DateTime _selectedDate;
   DateTime? _dueDate;
-  DebtType _selectedType = DebtType.lent;
+  late DebtType _selectedType;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.debt != null) {
+      _nameController.text = widget.debt!.personName;
+      _amountController.text = widget.debt!.amount.toString();
+      _noteController.text = widget.debt!.note;
+      _selectedDate = widget.debt!.date;
+      _dueDate = widget.debt!.dueDate;
+      _selectedType = widget.debt!.type;
+    } else {
+      _selectedDate = DateTime.now();
+      _selectedType = DebtType.lent;
+    }
+  }
 
   @override
   void dispose() {
@@ -62,13 +79,14 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     if (_formKey.currentState!.validate()) {
       final amount = double.tryParse(_amountController.text) ?? 0.0;
       final newDebt = DebtModel(
-        id: const Uuid().v4(),
+        id: widget.debt?.id ?? const Uuid().v4(),
         personName: _nameController.text.trim(),
         amount: amount,
         date: _selectedDate,
         dueDate: _dueDate,
         note: _noteController.text.trim(),
         type: _selectedType,
+        isPaid: widget.debt?.isPaid ?? false,
       );
 
       context.read<DebtCubit>().addDebt(newDebt);
@@ -83,7 +101,11 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isLent ? 'Add Lending Record' : 'Add Borrowing Record'),
+        title: Text(
+          widget.debt != null
+              ? 'Edit Record'
+              : (isLent ? 'Add Lending Record' : 'Add Borrowing Record'),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -223,9 +245,12 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Save Record',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                child: Text(
+                  widget.debt != null ? 'Update Record' : 'Save Record',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
