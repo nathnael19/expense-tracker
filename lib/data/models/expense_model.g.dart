@@ -23,13 +23,15 @@ class ExpenseModelAdapter extends TypeAdapter<ExpenseModel> {
       note: fields[3] as String,
       date: fields[4] as DateTime,
       type: fields[5] as TransactionType,
+      recurrence: fields[6] as RecurrenceType?,
+      lastGeneratedDate: fields[7] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ExpenseModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -41,7 +43,11 @@ class ExpenseModelAdapter extends TypeAdapter<ExpenseModel> {
       ..writeByte(4)
       ..write(obj.date)
       ..writeByte(5)
-      ..write(obj.type);
+      ..write(obj.type)
+      ..writeByte(6)
+      ..write(obj.recurrence)
+      ..writeByte(7)
+      ..write(obj.lastGeneratedDate);
   }
 
   @override
@@ -90,6 +96,50 @@ class TransactionTypeAdapter extends TypeAdapter<TransactionType> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is TransactionTypeAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class RecurrenceTypeAdapter extends TypeAdapter<RecurrenceType> {
+  @override
+  final int typeId = 7;
+
+  @override
+  RecurrenceType read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return RecurrenceType.none;
+      case 1:
+        return RecurrenceType.weekly;
+      case 2:
+        return RecurrenceType.monthly;
+      default:
+        return RecurrenceType.none;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, RecurrenceType obj) {
+    switch (obj) {
+      case RecurrenceType.none:
+        writer.writeByte(0);
+        break;
+      case RecurrenceType.weekly:
+        writer.writeByte(1);
+        break;
+      case RecurrenceType.monthly:
+        writer.writeByte(2);
+        break;
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RecurrenceTypeAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

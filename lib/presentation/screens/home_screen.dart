@@ -213,37 +213,71 @@ class HomeScreen extends StatelessWidget {
                                   horizontal: 16,
                                   vertical: 8,
                                 ),
-                                leading: Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    color:
-                                        (category != null
-                                                ? Colors.primaries[category
-                                                          .name
-                                                          .hashCode
-                                                          .abs() %
-                                                      Colors.primaries.length]
-                                                : Colors.grey)
-                                            .withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    category != null
-                                        ? IconData(
-                                            category.iconCode,
-                                            fontFamily: 'MaterialIcons',
-                                          )
-                                        : Icons.category,
-                                    color: category != null
-                                        ? Colors.primaries[category
-                                                  .name
-                                                  .hashCode
-                                                  .abs() %
-                                              Colors.primaries.length]
-                                        : Colors.grey,
-                                    size: 24,
-                                  ),
+                                leading: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Container(
+                                      width: 48,
+                                      height: 48,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            (category != null
+                                                    ? Colors.primaries[category
+                                                              .name
+                                                              .hashCode
+                                                              .abs() %
+                                                          Colors
+                                                              .primaries
+                                                              .length]
+                                                    : Colors.grey)
+                                                .withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        category != null
+                                            ? IconData(
+                                                category.iconCode,
+                                                fontFamily: 'MaterialIcons',
+                                              )
+                                            : Icons.category,
+                                        color: category != null
+                                            ? Colors.primaries[category
+                                                      .name
+                                                      .hashCode
+                                                      .abs() %
+                                                  Colors.primaries.length]
+                                            : Colors.grey,
+                                        size: 24,
+                                      ),
+                                    ),
+                                    if ((expense.recurrence ??
+                                            RecurrenceType.none) !=
+                                        RecurrenceType.none)
+                                      Positioned(
+                                        right: -4,
+                                        top: -4,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Theme.of(
+                                                context,
+                                              ).scaffoldBackgroundColor,
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            Icons.repeat,
+                                            size: 10,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                                 title: Text(
                                   category?.name ?? 'Unknown',

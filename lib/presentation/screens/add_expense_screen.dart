@@ -30,6 +30,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   String? _selectedCategoryId;
   DateTime _selectedDate = DateTime.now();
   TransactionType _type = TransactionType.expense;
+  RecurrenceType _recurrence = RecurrenceType.none;
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       _selectedCategoryId = widget.expense!.categoryId;
       _selectedDate = widget.expense!.date;
       _type = widget.expense!.type;
+      _recurrence = widget.expense!.recurrence ?? RecurrenceType.none;
     } else if (categories.isNotEmpty) {
       _selectedCategoryId = categories.first.id;
     }
@@ -69,6 +71,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       note: _noteController.text.trim(),
       date: _selectedDate,
       type: _type,
+      recurrence: _recurrence,
     );
 
     context.read<ExpenseCubit>().addExpense(newExpense);
@@ -276,6 +279,41 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       ? Colors.green[800]
                       : Theme.of(context).colorScheme.onPrimaryContainer,
                 ),
+              ),
+              const Gap(24),
+              const Text(
+                'Repeat Transaction',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+              ),
+              const Gap(8),
+              SegmentedButton<RecurrenceType>(
+                segments: const [
+                  ButtonSegment(
+                    value: RecurrenceType.none,
+                    label: Text('Once'),
+                    icon: Icon(Icons.event),
+                  ),
+                  ButtonSegment(
+                    value: RecurrenceType.weekly,
+                    label: Text('Weekly'),
+                    icon: Icon(Icons.repeat),
+                  ),
+                  ButtonSegment(
+                    value: RecurrenceType.monthly,
+                    label: Text('Monthly'),
+                    icon: Icon(Icons.calendar_month),
+                  ),
+                ],
+                selected: {_recurrence},
+                onSelectionChanged: (Set<RecurrenceType> newSelection) {
+                  setState(() {
+                    _recurrence = newSelection.first;
+                  });
+                },
               ),
               const Gap(16),
 

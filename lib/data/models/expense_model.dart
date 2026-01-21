@@ -10,6 +10,16 @@ enum TransactionType {
   income,
 }
 
+@HiveType(typeId: 7)
+enum RecurrenceType {
+  @HiveField(0)
+  none,
+  @HiveField(1)
+  weekly,
+  @HiveField(2)
+  monthly,
+}
+
 @HiveType(typeId: 1)
 class ExpenseModel extends HiveObject {
   @HiveField(0)
@@ -30,6 +40,12 @@ class ExpenseModel extends HiveObject {
   @HiveField(5)
   final TransactionType type;
 
+  @HiveField(6)
+  final RecurrenceType? recurrence;
+
+  @HiveField(7)
+  final DateTime? lastGeneratedDate;
+
   ExpenseModel({
     required this.id,
     required this.amount,
@@ -37,5 +53,29 @@ class ExpenseModel extends HiveObject {
     required this.note,
     required this.date,
     this.type = TransactionType.expense,
+    this.recurrence = RecurrenceType.none,
+    this.lastGeneratedDate,
   });
+
+  ExpenseModel copyWith({
+    String? id,
+    double? amount,
+    String? categoryId,
+    String? note,
+    DateTime? date,
+    TransactionType? type,
+    RecurrenceType? recurrence,
+    DateTime? lastGeneratedDate,
+  }) {
+    return ExpenseModel(
+      id: id ?? this.id,
+      amount: amount ?? this.amount,
+      categoryId: categoryId ?? this.categoryId,
+      note: note ?? this.note,
+      date: date ?? this.date,
+      type: type ?? this.type,
+      recurrence: recurrence ?? this.recurrence,
+      lastGeneratedDate: lastGeneratedDate ?? this.lastGeneratedDate,
+    );
+  }
 }
