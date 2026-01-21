@@ -1,3 +1,4 @@
+import 'package:expense_tracker_offline/data/models/budget_model.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/expense_model.dart';
 import '../models/category_model.dart';
@@ -10,6 +11,7 @@ class StorageService {
   static const String shortcutBoxName = 'shortcuts';
   static const String settingsBoxName = 'settings';
   static const String debtBoxName = 'debts';
+  static const String budgetBoxName = 'budgets';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -19,11 +21,13 @@ class StorageService {
     Hive.registerAdapter(DebtModelAdapter());
     Hive.registerAdapter(DebtTypeAdapter());
     Hive.registerAdapter(TransactionTypeAdapter());
+    Hive.registerAdapter(BudgetModelAdapter());
 
     await Hive.openBox<ExpenseModel>(expenseBoxName);
     await Hive.openBox<CategoryModel>(categoryBoxName);
     await Hive.openBox<ShortcutModel>(shortcutBoxName);
     await Hive.openBox<DebtModel>(debtBoxName);
+    await Hive.openBox<BudgetModel>(budgetBoxName);
     await Hive.openBox(settingsBoxName);
   }
 
@@ -34,6 +38,7 @@ class StorageService {
   static Box<ShortcutModel> get shortcutBox =>
       Hive.box<ShortcutModel>(shortcutBoxName);
   static Box<DebtModel> get debtBox => Hive.box<DebtModel>(debtBoxName);
+  static Box<BudgetModel> get budgetBox => Hive.box<BudgetModel>(budgetBoxName);
   static Box get settingsBox => Hive.box(settingsBoxName);
 
   // Helper methods for Expenses

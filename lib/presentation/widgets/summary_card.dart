@@ -8,6 +8,7 @@ class SummaryCard extends StatelessWidget {
   final double todaysIncome;
   final double todaysNetBalance;
   final double monthlyTotal;
+  final double? monthlyBudget;
 
   const SummaryCard({
     super.key,
@@ -15,6 +16,7 @@ class SummaryCard extends StatelessWidget {
     required this.todaysIncome,
     required this.todaysNetBalance,
     required this.monthlyTotal,
+    this.monthlyBudget,
   });
 
   @override
@@ -130,6 +132,40 @@ class SummaryCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (monthlyBudget != null) ...[
+                  const Gap(16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Monthly Budget',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                      Text(
+                        'ETB ${monthlyTotal.toStringAsFixed(0)} / ${monthlyBudget!.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Gap(8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: (monthlyTotal / monthlyBudget!).clamp(0.0, 1.0),
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        monthlyTotal > monthlyBudget!
+                            ? Colors.redAccent
+                            : Colors.greenAccent,
+                      ),
+                      minHeight: 8,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

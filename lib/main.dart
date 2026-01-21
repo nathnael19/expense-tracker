@@ -11,6 +11,7 @@ import 'presentation/blocs/settings_cubit.dart';
 import 'presentation/blocs/category_cubit.dart';
 import 'presentation/blocs/expense_cubit.dart';
 import 'presentation/blocs/shortcut_cubit.dart';
+import 'presentation/blocs/budget_cubit.dart';
 import 'presentation/blocs/stats_cubit.dart';
 import 'presentation/screens/app_lock_screen.dart';
 import 'presentation/screens/splash_screen.dart';
@@ -34,6 +35,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => ExpenseCubit()),
         BlocProvider(create: (_) => ShortcutCubit()),
         BlocProvider(create: (_) => DebtCubit()),
+        BlocProvider(create: (_) => BudgetCubit()),
         BlocProvider(
           create: (context) =>
               StatsCubit(expenseCubit: context.read<ExpenseCubit>()),

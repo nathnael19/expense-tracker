@@ -10,6 +10,7 @@ import '../blocs/expense_cubit.dart';
 import '../blocs/category_cubit.dart';
 import '../blocs/stats_cubit.dart';
 import '../blocs/theme_cubit.dart';
+import '../blocs/budget_cubit.dart';
 import '../widgets/summary_card.dart';
 import 'add_expense_screen.dart';
 import 'monthly_report_screen.dart';
@@ -27,6 +28,7 @@ class HomeScreen extends StatelessWidget {
     final categories = context.watch<CategoryCubit>().state;
     final statsState = context.watch<StatsCubit>().state;
     final themeMode = context.watch<ThemeCubit>().state;
+    final budgetState = context.watch<BudgetCubit>().state;
 
     final todaysTotal = expenseState.todaysTotal;
     final todaysExpenses = expenseState.todaysExpenses;
@@ -115,6 +117,7 @@ class HomeScreen extends StatelessWidget {
                 todaysIncome: expenseState.todaysIncome,
                 todaysNetBalance: expenseState.todaysNetBalance,
                 monthlyTotal: statsState.reportStats.totalSpent,
+                monthlyBudget: budgetState.monthlyBudget?.amount,
               ),
               const Gap(32),
               Row(

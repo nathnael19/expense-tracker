@@ -8,6 +8,7 @@ import '../blocs/settings_cubit.dart';
 import '../blocs/theme_cubit.dart';
 import '../../data/services/backup_service.dart';
 import '../../data/services/security_service.dart';
+import 'budget_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -55,6 +56,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   builder: (ctx) => const CategoryManagementScreen(),
                 ),
               );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.account_balance_wallet_outlined),
+            title: const Text('Set Monthly Budget'),
+            subtitle: const Text('Define your monthly spending limit'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (ctx) => const BudgetScreen()));
             },
           ),
 
