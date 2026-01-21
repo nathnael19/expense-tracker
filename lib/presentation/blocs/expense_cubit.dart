@@ -6,15 +6,25 @@ class ExpenseState {
   final List<ExpenseModel> allExpenses;
   final List<ExpenseModel> todaysExpenses;
   final double todaysTotal;
+  final double todaysIncome;
+  final double todaysNetBalance;
 
   ExpenseState({
     required this.allExpenses,
     required this.todaysExpenses,
     required this.todaysTotal,
+    required this.todaysIncome,
+    required this.todaysNetBalance,
   });
 
   factory ExpenseState.initial() {
-    return ExpenseState(allExpenses: [], todaysExpenses: [], todaysTotal: 0);
+    return ExpenseState(
+      allExpenses: [],
+      todaysExpenses: [],
+      todaysTotal: 0,
+      todaysIncome: 0,
+      todaysNetBalance: 0,
+    );
   }
 }
 
@@ -36,10 +46,25 @@ class ExpenseCubit extends Cubit<ExpenseState> {
           e.date.day == now.day;
     }).toList();
 
-    final total = today.fold(0.0, (sum, item) => sum + item.amount);
+    double totalExpense = 0.0;
+    double totalIncome = 0.0;
+
+    for (var e in today) {
+      if (e.type == TransactionType.income) {
+        totalIncome += e.amount;
+      } else {
+        totalExpense += e.amount;
+      }
+    }
 
     emit(
-      ExpenseState(allExpenses: all, todaysExpenses: today, todaysTotal: total),
+      ExpenseState(
+        allExpenses: all,
+        todaysExpenses: today,
+        todaysTotal: totalExpense,
+        todaysIncome: totalIncome,
+        todaysNetBalance: totalIncome - totalExpense,
+      ),
     );
   }
 

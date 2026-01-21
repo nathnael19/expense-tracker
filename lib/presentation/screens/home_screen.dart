@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
+import 'package:expense_tracker_offline/data/models/expense_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
@@ -111,6 +112,8 @@ class HomeScreen extends StatelessWidget {
               const Gap(16),
               SummaryCard(
                 todaysTotal: todaysTotal,
+                todaysIncome: expenseState.todaysIncome,
+                todaysNetBalance: expenseState.todaysNetBalance,
                 monthlyTotal: statsState.reportStats.totalSpent,
               ),
               const Gap(32),
@@ -260,11 +263,14 @@ class HomeScreen extends StatelessWidget {
                                       )
                                     : null,
                                 trailing: Text(
-                                  '-ETB ${expense.amount.toStringAsFixed(2)}',
-                                  style: const TextStyle(
+                                  '${expense.type == TransactionType.income ? '+' : '-'}ETB ${expense.amount.toStringAsFixed(2)}',
+                                  style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
-                                    color: Colors.redAccent,
+                                    color:
+                                        expense.type == TransactionType.income
+                                        ? Colors.greenAccent[400]
+                                        : Colors.redAccent,
                                   ),
                                 ),
                               ),

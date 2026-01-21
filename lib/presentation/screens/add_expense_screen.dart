@@ -29,6 +29,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   String? _selectedCategoryId;
   DateTime _selectedDate = DateTime.now();
+  TransactionType _type = TransactionType.expense;
 
   @override
   void initState() {
@@ -41,6 +42,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       _noteController.text = widget.expense!.note;
       _selectedCategoryId = widget.expense!.categoryId;
       _selectedDate = widget.expense!.date;
+      _type = widget.expense!.type;
     } else if (categories.isNotEmpty) {
       _selectedCategoryId = categories.first.id;
     }
@@ -66,6 +68,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       categoryId: _selectedCategoryId!,
       note: _noteController.text.trim(),
       date: _selectedDate,
+      type: _type,
     );
 
     context.read<ExpenseCubit>().addExpense(newExpense);
@@ -246,6 +249,35 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   ),
                 ),
               if (widget.expense == null) const Gap(16),
+              SegmentedButton<TransactionType>(
+                segments: const [
+                  ButtonSegment(
+                    value: TransactionType.expense,
+                    label: Text('Expense'),
+                    icon: Icon(Icons.arrow_downward),
+                  ),
+                  ButtonSegment(
+                    value: TransactionType.income,
+                    label: Text('Income'),
+                    icon: Icon(Icons.arrow_upward),
+                  ),
+                ],
+                selected: {_type},
+                onSelectionChanged: (Set<TransactionType> newSelection) {
+                  setState(() {
+                    _type = newSelection.first;
+                  });
+                },
+                style: SegmentedButton.styleFrom(
+                  selectedBackgroundColor: _type == TransactionType.income
+                      ? Colors.greenAccent[400]?.withOpacity(0.2)
+                      : Theme.of(context).colorScheme.primaryContainer,
+                  selectedForegroundColor: _type == TransactionType.income
+                      ? Colors.green[800]
+                      : Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+              ),
+              const Gap(16),
 
               const Gap(16),
 
@@ -411,7 +443,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   ),
                 ),
                 child: Text(
-                  widget.expense == null ? 'Save Expense' : 'Update Expense',
+                  widget.expense == null
+                      ? 'Save ${_type == TransactionType.income ? 'Income' : 'Expense'}'
+                      : 'Update ${_type == TransactionType.income ? 'Income' : 'Expense'}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

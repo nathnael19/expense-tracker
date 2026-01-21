@@ -18,6 +18,7 @@ class StorageService {
     Hive.registerAdapter(ShortcutModelAdapter());
     Hive.registerAdapter(DebtModelAdapter());
     Hive.registerAdapter(DebtTypeAdapter());
+    Hive.registerAdapter(TransactionTypeAdapter());
 
     await Hive.openBox<ExpenseModel>(expenseBoxName);
     await Hive.openBox<CategoryModel>(categoryBoxName);

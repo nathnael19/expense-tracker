@@ -7,14 +7,17 @@ enum ReportViewMode { weekly, monthly, yearly }
 
 class ReportStats {
   final double totalSpent;
+  final double totalIncome;
+  final double netBalance;
   final double average;
   final Map<String, double> categoryTotals;
   final List<ExpenseModel> expenses;
-  final List<double>
-  periodicTotals; // e.g. 7 days for week, ~4 weeks for month, 12 months for year
+  final List<double> periodicTotals; // Based on expenses only for chart
 
   ReportStats({
     required this.totalSpent,
+    required this.totalIncome,
+    required this.netBalance,
     required this.average,
     required this.categoryTotals,
     required this.expenses,
@@ -23,6 +26,8 @@ class ReportStats {
 
   factory ReportStats.empty() => ReportStats(
     totalSpent: 0,
+    totalIncome: 0,
+    netBalance: 0,
     average: 0,
     categoryTotals: {},
     expenses: [],
@@ -191,10 +196,15 @@ class StatsCubit extends Cubit<StatsState> {
     // Periodic Totals for Chart
     List<double> periodicTotals = [];
     double totalSpent = 0;
+    double totalIncome = 0;
     Map<String, double> catTotals = {};
     for (var e in filteredExpenses) {
-      totalSpent += e.amount;
-      catTotals[e.categoryId] = (catTotals[e.categoryId] ?? 0) + e.amount;
+      if (e.type == TransactionType.income) {
+        totalIncome += e.amount;
+      } else {
+        totalSpent += e.amount;
+        catTotals[e.categoryId] = (catTotals[e.categoryId] ?? 0) + e.amount;
+      }
     }
 
     if (viewMode == ReportViewMode.weekly) {
@@ -203,6 +213,7 @@ class StatsCubit extends Cubit<StatsState> {
         Duration(days: selectedDate.weekday - 1),
       );
       for (var e in filteredExpenses) {
+        if (e.type == TransactionType.income) continue; // Chart shows expenses
         final diff = e.date
             .difference(
               DateTime(
@@ -220,6 +231,7 @@ class StatsCubit extends Cubit<StatsState> {
       // Divide by weeks
       periodicTotals = List.generate(5, (index) => 0.0);
       for (var e in filteredExpenses) {
+        if (e.type == TransactionType.income) continue;
         int week = (e.date.day - 1) ~/ 7;
         if (week >= 5) week = 4;
         periodicTotals[week] += e.amount;
@@ -227,6 +239,7 @@ class StatsCubit extends Cubit<StatsState> {
     } else {
       periodicTotals = List.generate(12, (index) => 0.0);
       for (var e in filteredExpenses) {
+        if (e.type == TransactionType.income) continue;
         periodicTotals[e.date.month - 1] += e.amount;
       }
     }
@@ -249,6 +262,8 @@ class StatsCubit extends Cubit<StatsState> {
 
     final reportStats = ReportStats(
       totalSpent: totalSpent,
+      totalIncome: totalIncome,
+      netBalance: totalIncome - totalSpent,
       average: average,
       categoryTotals: catTotals,
       expenses: filteredExpenses,

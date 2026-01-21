@@ -4,12 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 
 class SummaryCard extends StatelessWidget {
-  final double todaysTotal;
+  final double todaysTotal; // This represents total expense
+  final double todaysIncome;
+  final double todaysNetBalance;
   final double monthlyTotal;
 
   const SummaryCard({
     super.key,
     required this.todaysTotal,
+    required this.todaysIncome,
+    required this.todaysNetBalance,
     required this.monthlyTotal,
   });
 
@@ -61,7 +65,7 @@ class SummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Spent Today',
+                  'Net Balance Today',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 16,
@@ -70,7 +74,7 @@ class SummaryCard extends StatelessWidget {
                 ),
                 const Gap(8),
                 Text(
-                  'ETB ${todaysTotal.toStringAsFixed(2)}',
+                  'ETB ${todaysNetBalance.toStringAsFixed(2)}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 40,
@@ -81,41 +85,98 @@ class SummaryCard extends StatelessWidget {
                 const Gap(24),
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.calendar_month,
-                            color: Colors.white,
-                            size: 14,
-                          ),
-                          const Gap(6),
-                          Text(
-                            'This Month: ETB ${monthlyTotal.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+                    _MiniStat(
+                      label: 'Income',
+                      amount: todaysIncome,
+                      icon: Icons.arrow_upward,
+                      color: Colors.greenAccent,
+                    ),
+                    const Gap(16),
+                    _MiniStat(
+                      label: 'Expense',
+                      amount: todaysTotal,
+                      icon: Icons.arrow_downward,
+                      color: Colors.orangeAccent,
                     ),
                   ],
+                ),
+                const Gap(16),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.calendar_month,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                      const Gap(6),
+                      Text(
+                        'Monthly Spent: ETB ${monthlyTotal.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _MiniStat extends StatelessWidget {
+  final String label;
+  final double amount;
+  final IconData icon;
+  final Color color;
+
+  const _MiniStat({
+    required this.label,
+    required this.amount,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 12, color: color),
+            const Gap(4),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+          ],
+        ),
+        const Gap(4),
+        Text(
+          'ETB ${amount.toStringAsFixed(0)}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 }

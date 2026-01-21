@@ -201,28 +201,66 @@ class MonthlyReportScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const Gap(8),
-              Center(
+              const Gap(16),
+              Row(
+                children: [
+                  _SummaryItem(
+                    label: 'Income',
+                    amount: stats.totalIncome,
+                    color: Colors.greenAccent[400]!,
+                  ),
+                  const Gap(12),
+                  _SummaryItem(
+                    label: 'Expense',
+                    amount: stats.totalSpent,
+                    color: Colors.redAccent,
+                  ),
+                ],
+              ),
+              const Gap(12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(20),
+                ),
                 child: Column(
                   children: [
-                    Text(
-                      'ETB ${stats.totalSpent.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
+                    const Text(
+                      'Net Balance',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
                       ),
                     ),
-                    const Gap(4),
+                    const Gap(8),
                     Text(
-                      viewMode == ReportViewMode.yearly
-                          ? 'Monthly Avg: ETB ${stats.average.toStringAsFixed(2)}'
-                          : 'Daily Avg: ETB ${stats.average.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w500,
+                      'ETB ${stats.netBalance.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: stats.netBalance >= 0
+                            ? Colors.green[800]
+                            : Colors.red[800],
                       ),
                     ),
                   ],
+                ),
+              ),
+              const Gap(24),
+              Center(
+                child: Text(
+                  viewMode == ReportViewMode.yearly
+                      ? 'Monthly Avg Spent: ETB ${stats.average.toStringAsFixed(2)}'
+                      : 'Daily Avg Spent: ETB ${stats.average.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               const Gap(32),
@@ -553,6 +591,54 @@ class MonthlyReportScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _SummaryItem extends StatelessWidget {
+  final String label;
+  final double amount;
+  final Color color;
+
+  const _SummaryItem({
+    required this.label,
+    required this.amount,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: color.withOpacity(0.8),
+              ),
+            ),
+            const Gap(4),
+            Text(
+              'ETB ${amount.toStringAsFixed(0)}',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: color.withOpacity(1),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
