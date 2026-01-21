@@ -15,7 +15,9 @@ import '../blocs/shortcut_cubit.dart';
 import '../../data/models/shortcut_model.dart';
 
 class AddExpenseScreen extends StatefulWidget {
-  const AddExpenseScreen({super.key});
+  final ExpenseModel? expense;
+
+  const AddExpenseScreen({super.key, this.expense});
 
   @override
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
@@ -31,9 +33,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   void initState() {
     super.initState();
-    // Pre-select the first category if available
+    // Pre-select the first category if available or use existing expense data
     final categories = context.read<CategoryCubit>().state;
-    if (categories.isNotEmpty) {
+
+    if (widget.expense != null) {
+      _amountController.text = widget.expense!.amount.toString();
+      _noteController.text = widget.expense!.note;
+      _selectedCategoryId = widget.expense!.categoryId;
+      _selectedDate = widget.expense!.date;
+    } else if (categories.isNotEmpty) {
       _selectedCategoryId = categories.first.id;
     }
   }
@@ -53,7 +61,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     if (amount == null || amount <= 0) return;
 
     final newExpense = ExpenseModel(
-      id: const Uuid().v4(),
+      id: widget.expense?.id ?? const Uuid().v4(),
       amount: amount,
       categoryId: _selectedCategoryId!,
       note: _noteController.text.trim(),
@@ -191,7 +199,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Expense'),
+        title: Text(widget.expense == null ? 'Add Expense' : 'Edit Expense'),
         elevation: 0,
         leading: IconButton(
           icon: Icon(
@@ -207,43 +215,44 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 0. Shortcuts Section
-              SizedBox(
-                height: 40,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    ActionChip(
-                      avatar: const Icon(Icons.flash_on, size: 16),
-                      label: const Text('Add Shortcut'),
-                      onPressed: _showAddShortcutDialog,
-                    ),
-                    const Gap(8),
-                    ...shortcuts.map((shortcut) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: InputChip(
-                          label: Text(shortcut.title),
-                          onPressed: () => _applyShortcut(shortcut),
-                          onDeleted: () {
-                            context.read<ShortcutCubit>().deleteShortcut(
-                              shortcut.id,
-                            );
-                          },
-                        ),
-                      );
-                    }),
-                  ],
+              // 0. Shortcuts Section (Only show when adding new)
+              if (widget.expense == null)
+                SizedBox(
+                  height: 40,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      ActionChip(
+                        avatar: const Icon(Icons.flash_on, size: 16),
+                        label: const Text('Add Shortcut'),
+                        onPressed: _showAddShortcutDialog,
+                      ),
+                      const Gap(8),
+                      ...shortcuts.map((shortcut) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: InputChip(
+                            label: Text(shortcut.title),
+                            onPressed: () => _applyShortcut(shortcut),
+                            onDeleted: () {
+                              context.read<ShortcutCubit>().deleteShortcut(
+                                shortcut.id,
+                              );
+                            },
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
                 ),
-              ),
-              const Gap(16),
+              if (widget.expense == null) const Gap(16),
 
               const Gap(16),
 
               // 1. Amount Input (Primary Focus)
               TextField(
                 controller: _amountController,
-                autofocus: true,
+                autofocus: widget.expense == null, // Only autofocus on new
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
@@ -401,9 +410,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Save Expense',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                child: Text(
+                  widget.expense == null ? 'Save Expense' : 'Update Expense',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const Gap(32),

@@ -166,9 +166,11 @@ class HomeScreen extends StatelessWidget {
                                 expense.id,
                               );
 
+                              ScaffoldMessenger.of(context).clearSnackBars();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: const Text('Expense deleted'),
+                                  duration: const Duration(seconds: 2),
                                   action: SnackBarAction(
                                     label: 'Undo',
                                     onPressed: () {
@@ -193,6 +195,14 @@ class HomeScreen extends StatelessWidget {
                                 ],
                               ),
                               child: ListTile(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (ctx) =>
+                                          AddExpenseScreen(expense: expense),
+                                    ),
+                                  );
+                                },
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                   vertical: 8,
