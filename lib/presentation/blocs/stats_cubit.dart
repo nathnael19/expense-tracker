@@ -83,7 +83,9 @@ class StatsCubit extends Cubit<StatsState> {
     _expenseSubscription = expenseCubit.stream.listen((_) {
       _calculateStats();
     });
-    _calculateStats();
+
+    // Defer initial calculation
+    Future.microtask(() => _calculateStats());
   }
 
   void changeDate(DateTime date) {

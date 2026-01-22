@@ -33,7 +33,10 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   final ExpenseRepository _repository = ExpenseRepository();
 
   ExpenseCubit() : super(ExpenseState.initial()) {
-    _initialLoad();
+    // Small delay to allow initial build to complete
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _initialLoad();
+    });
   }
 
   Future<void> _initialLoad() async {

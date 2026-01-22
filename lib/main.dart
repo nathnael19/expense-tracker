@@ -19,8 +19,10 @@ import 'presentation/screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await StorageService.init();
-  await NotificationService.init();
+
+  // Initialize services in parallel
+  await Future.wait([StorageService.init(), NotificationService.init()]);
+
   runApp(const MyApp());
 }
 
@@ -56,7 +58,23 @@ class MyApp extends StatelessWidget {
               ),
               useMaterial3: true,
               scaffoldBackgroundColor: const Color(0xFFF8F9FA),
-              textTheme: GoogleFonts.interTextTheme(),
+              textTheme: GoogleFonts.interTextTheme().copyWith(
+                displayLarge: GoogleFonts.inter(),
+                displayMedium: GoogleFonts.inter(),
+                displaySmall: GoogleFonts.inter(),
+                headlineLarge: GoogleFonts.inter(),
+                headlineMedium: GoogleFonts.inter(),
+                headlineSmall: GoogleFonts.inter(),
+                titleLarge: GoogleFonts.inter(),
+                titleMedium: GoogleFonts.inter(),
+                titleSmall: GoogleFonts.inter(),
+                bodyLarge: GoogleFonts.inter(),
+                bodyMedium: GoogleFonts.inter(),
+                bodySmall: GoogleFonts.inter(),
+                labelLarge: GoogleFonts.inter(),
+                labelMedium: GoogleFonts.inter(),
+                labelSmall: GoogleFonts.inter(),
+              ),
               appBarTheme: const AppBarTheme(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
@@ -72,7 +90,24 @@ class MyApp extends StatelessWidget {
               ),
               useMaterial3: true,
               scaffoldBackgroundColor: const Color(0xFF121212),
-              textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+              textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme)
+                  .copyWith(
+                    displayLarge: GoogleFonts.inter(),
+                    displayMedium: GoogleFonts.inter(),
+                    displaySmall: GoogleFonts.inter(),
+                    headlineLarge: GoogleFonts.inter(),
+                    headlineMedium: GoogleFonts.inter(),
+                    headlineSmall: GoogleFonts.inter(),
+                    titleLarge: GoogleFonts.inter(),
+                    titleMedium: GoogleFonts.inter(),
+                    titleSmall: GoogleFonts.inter(),
+                    bodyLarge: GoogleFonts.inter(),
+                    bodyMedium: GoogleFonts.inter(),
+                    bodySmall: GoogleFonts.inter(),
+                    labelLarge: GoogleFonts.inter(),
+                    labelMedium: GoogleFonts.inter(),
+                    labelSmall: GoogleFonts.inter(),
+                  ),
               appBarTheme: const AppBarTheme(
                 backgroundColor: Colors.transparent,
                 elevation: 0,

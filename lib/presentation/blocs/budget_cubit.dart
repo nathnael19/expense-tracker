@@ -21,7 +21,7 @@ class BudgetState {
 
 class BudgetCubit extends Cubit<BudgetState> {
   BudgetCubit() : super(BudgetState()) {
-    loadBudgets();
+    Future.microtask(() => loadBudgets());
   }
 
   void loadBudgets() {

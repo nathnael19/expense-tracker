@@ -6,7 +6,7 @@ class CategoryCubit extends Cubit<List<CategoryModel>> {
   final CategoryRepository _repository = CategoryRepository();
 
   CategoryCubit() : super([]) {
-    _init();
+    Future.microtask(() => _init());
   }
 
   Future<void> _init() async {

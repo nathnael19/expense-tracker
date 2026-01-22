@@ -35,7 +35,7 @@ class DebtCubit extends Cubit<DebtState> {
   late Box<DebtModel> _box;
 
   DebtCubit() : super(DebtState(isLoading: true)) {
-    _init();
+    Future.microtask(() => _init());
   }
 
   Future<void> _init() async {

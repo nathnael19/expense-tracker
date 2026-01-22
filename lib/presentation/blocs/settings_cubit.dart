@@ -29,7 +29,7 @@ class SettingsState {
 
 class SettingsCubit extends Cubit<SettingsState> {
   SettingsCubit() : super(SettingsState()) {
-    _loadSettings();
+    Future.microtask(() => _loadSettings());
   }
 
   void _loadSettings() {
