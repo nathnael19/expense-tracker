@@ -9,6 +9,7 @@ import '../blocs/theme_cubit.dart';
 import '../../data/services/backup_service.dart';
 import '../../data/services/security_service.dart';
 import 'budget_screen.dart';
+import 'recurring_transactions_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -66,6 +67,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.of(
                 context,
               ).push(MaterialPageRoute(builder: (ctx) => const BudgetScreen()));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.repeat),
+            title: const Text('Recurring Transactions'),
+            subtitle: const Text('Manage repeat expenses'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => const RecurringTransactionsScreen(),
+                ),
+              );
             },
           ),
 

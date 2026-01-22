@@ -27,4 +27,12 @@ class CategoryCubit extends Cubit<List<CategoryModel>> {
     await _repository.deleteCategory(id);
     _reload();
   }
+
+  CategoryModel? getCategoryById(String id) {
+    try {
+      return state.firstWhere((category) => category.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
 }

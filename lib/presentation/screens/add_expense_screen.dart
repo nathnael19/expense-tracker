@@ -16,8 +16,13 @@ import '../../data/models/shortcut_model.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   final ExpenseModel? expense;
+  final bool forceRecurringMode;
 
-  const AddExpenseScreen({super.key, this.expense});
+  const AddExpenseScreen({
+    super.key,
+    this.expense,
+    this.forceRecurringMode = false,
+  });
 
   @override
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
@@ -47,6 +52,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       _recurrence = widget.expense!.recurrence ?? RecurrenceType.none;
     } else if (categories.isNotEmpty) {
       _selectedCategoryId = categories.first.id;
+      if (widget.forceRecurringMode) {
+        _recurrence = RecurrenceType.monthly;
+      }
     }
   }
 
@@ -205,7 +213,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.expense == null ? 'Add Expense' : 'Edit Expense'),
+        title: Text(
+          widget.expense == null
+              ? (widget.forceRecurringMode ? 'New Recurring' : 'Add Expense')
+              : 'Edit Expense',
+        ),
         elevation: 0,
         leading: IconButton(
           icon: Icon(
@@ -281,41 +293,40 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 ),
               ),
               const Gap(24),
-              const Text(
-                'Repeat Transaction',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
+              if (widget.forceRecurringMode ||
+                  (widget.expense != null &&
+                      widget.expense?.recurrence != RecurrenceType.none)) ...[
+                const Text(
+                  'Repeat Transaction',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
-              const Gap(8),
-              SegmentedButton<RecurrenceType>(
-                segments: const [
-                  ButtonSegment(
-                    value: RecurrenceType.none,
-                    label: Text('Once'),
-                    icon: Icon(Icons.event),
-                  ),
-                  ButtonSegment(
-                    value: RecurrenceType.weekly,
-                    label: Text('Weekly'),
-                    icon: Icon(Icons.repeat),
-                  ),
-                  ButtonSegment(
-                    value: RecurrenceType.monthly,
-                    label: Text('Monthly'),
-                    icon: Icon(Icons.calendar_month),
-                  ),
-                ],
-                selected: {_recurrence},
-                onSelectionChanged: (Set<RecurrenceType> newSelection) {
-                  setState(() {
-                    _recurrence = newSelection.first;
-                  });
-                },
-              ),
-              const Gap(16),
+                const Gap(8),
+                SegmentedButton<RecurrenceType>(
+                  segments: const [
+                    ButtonSegment(
+                      value: RecurrenceType.weekly,
+                      label: Text('Weekly'),
+                      icon: Icon(Icons.repeat),
+                    ),
+                    ButtonSegment(
+                      value: RecurrenceType.monthly,
+                      label: Text('Monthly'),
+                      icon: Icon(Icons.calendar_month),
+                    ),
+                  ],
+                  selected: {_recurrence},
+                  onSelectionChanged: (Set<RecurrenceType> newSelection) {
+                    setState(() {
+                      _recurrence = newSelection.first;
+                    });
+                  },
+                ),
+                const Gap(16),
+              ],
 
               const Gap(16),
 
