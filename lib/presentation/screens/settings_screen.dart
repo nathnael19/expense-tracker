@@ -3,9 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
+import 'package:intl/intl.dart';
 import 'category_management_screen.dart';
 import '../blocs/settings_cubit.dart';
 import '../blocs/theme_cubit.dart';
+import '../blocs/sync_cubit.dart';
 import '../../data/services/backup_service.dart';
 import '../../data/services/security_service.dart';
 import 'budget_screen.dart';
@@ -155,6 +157,160 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: Text('App Lock Unavailable'),
               subtitle: Text('Biometrics not supported on this device'),
             ),
+
+          const Divider(),
+
+          // Cloud Sync Section
+          _buildSectionHeader('Cloud Sync'),
+          BlocConsumer<SyncCubit, SyncState>(
+            listener: (context, syncState) {
+              if (syncState.status == SyncStatus.success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Sync successful!')),
+                );
+                context.read<SyncCubit>().resetStatus();
+              } else if (syncState.status == SyncStatus.error) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(syncState.errorMessage ?? 'Sync failed'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                context.read<SyncCubit>().resetStatus();
+              }
+            },
+            builder: (context, syncState) {
+              if (!syncState.isSignedIn) {
+                return ListTile(
+                  leading: const Icon(Icons.cloud_outlined),
+                  title: const Text('Sign in with Google'),
+                  subtitle: const Text('Backup and sync your data'),
+                  trailing: syncState.status == SyncStatus.syncing
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: syncState.status == SyncStatus.syncing
+                      ? null
+                      : () {
+                          context.read<SyncCubit>().signIn();
+                        },
+                );
+              }
+
+              // User is signed in
+              return Column(
+                children: [
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: syncState.user?.photoUrl != null
+                          ? NetworkImage(syncState.user!.photoUrl!)
+                          : null,
+                      child: syncState.user?.photoUrl == null
+                          ? const Icon(Icons.person)
+                          : null,
+                    ),
+                    title: Text(syncState.user?.displayName ?? 'User'),
+                    subtitle: Text(syncState.user?.email ?? ''),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.logout, size: 20),
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Sign Out?'),
+                            content: const Text(
+                              'You will no longer sync data to Google Drive.',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Sign Out'),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirm == true && context.mounted) {
+                          context.read<SyncCubit>().signOut();
+                        }
+                      },
+                    ),
+                  ),
+                  if (syncState.lastSyncTime != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Last synced: ${DateFormat('MMM d, y h:mm a').format(syncState.lastSyncTime!)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                      ),
+                    ),
+                  const Gap(8),
+                  ListTile(
+                    leading: const Icon(Icons.sync),
+                    title: const Text('Sync Now'),
+                    subtitle: const Text('Upload and sync your data'),
+                    trailing: syncState.status == SyncStatus.syncing
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : null,
+                    onTap: syncState.status == SyncStatus.syncing
+                        ? null
+                        : () {
+                            context.read<SyncCubit>().syncNow();
+                          },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.cloud_download),
+                    title: const Text('Restore from Cloud'),
+                    subtitle: const Text('Download and restore backup'),
+                    onTap: syncState.status == SyncStatus.syncing
+                        ? null
+                        : () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Restore from Cloud?'),
+                                content: const Text(
+                                  'This will OVERWRITE all current data with your cloud backup. Are you sure?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    child: const Text(
+                                      'Restore',
+                                      style: TextStyle(color: Colors.orange),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true && context.mounted) {
+                              context.read<SyncCubit>().restoreBackup();
+                            }
+                          },
+                  ),
+                ],
+              );
+            },
+          ),
 
           const Divider(),
 

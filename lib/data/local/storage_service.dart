@@ -21,6 +21,7 @@ class StorageService {
     Hive.registerAdapter(DebtModelAdapter());
     Hive.registerAdapter(DebtTypeAdapter());
     Hive.registerAdapter(TransactionTypeAdapter());
+    Hive.registerAdapter(RecurrenceTypeAdapter());
     Hive.registerAdapter(BudgetModelAdapter());
 
     await Hive.openBox<ExpenseModel>(expenseBoxName);

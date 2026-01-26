@@ -1,4 +1,4 @@
-package com.example.expense_tracker_offline
+package com.nathnael.expense_tracker_offline
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 
