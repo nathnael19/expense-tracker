@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'data/local/storage_service.dart';
+import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/blocs/theme_cubit.dart';
 import 'presentation/blocs/settings_cubit.dart';
@@ -22,7 +24,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize services in parallel
-  await Future.wait([StorageService.init(), NotificationService.init()]);
+  await Future.wait([
+    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+    StorageService.init(),
+    NotificationService.init(),
+  ]);
 
   runApp(const MyApp());
 }
