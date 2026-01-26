@@ -15,14 +15,15 @@ class StorageService {
 
   static Future<void> init() async {
     await Hive.initFlutter();
-    Hive.registerAdapter(ExpenseModelAdapter());
-    Hive.registerAdapter(CategoryModelAdapter());
-    Hive.registerAdapter(ShortcutModelAdapter());
-    Hive.registerAdapter(DebtModelAdapter());
-    Hive.registerAdapter(DebtTypeAdapter());
-    Hive.registerAdapter(TransactionTypeAdapter());
-    Hive.registerAdapter(RecurrenceTypeAdapter());
-    Hive.registerAdapter(BudgetModelAdapter());
+
+    _safeRegisterAdapter(ExpenseModelAdapter());
+    _safeRegisterAdapter(CategoryModelAdapter());
+    _safeRegisterAdapter(ShortcutModelAdapter());
+    _safeRegisterAdapter(DebtModelAdapter());
+    _safeRegisterAdapter(DebtTypeAdapter());
+    _safeRegisterAdapter(TransactionTypeAdapter());
+    _safeRegisterAdapter(RecurrenceTypeAdapter());
+    _safeRegisterAdapter(BudgetModelAdapter());
 
     await Hive.openBox<ExpenseModel>(expenseBoxName);
     await Hive.openBox<CategoryModel>(categoryBoxName);
@@ -70,5 +71,11 @@ class StorageService {
 
   List<CategoryModel> getAllCategories() {
     return categoryBox.values.toList();
+  }
+
+  static void _safeRegisterAdapter<T>(TypeAdapter<T> adapter) {
+    if (!Hive.isAdapterRegistered(adapter.typeId)) {
+      Hive.registerAdapter(adapter);
+    }
   }
 }

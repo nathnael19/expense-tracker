@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
 import '../../data/models/debt_model.dart';
@@ -43,6 +44,7 @@ class DebtCubit extends Cubit<DebtState> {
       _box = await Hive.openBox<DebtModel>(boxName);
       emit(state.copyWith(debts: _box.values.toList(), isLoading: false));
     } catch (e) {
+      debugPrint('Error initializing DebtCubit: $e');
       emit(state.copyWith(error: e.toString(), isLoading: false));
     }
   }
@@ -52,6 +54,7 @@ class DebtCubit extends Cubit<DebtState> {
       await _box.put(debt.id, debt);
       emit(state.copyWith(debts: _box.values.toList()));
     } catch (e) {
+      debugPrint('Error adding debt: $e');
       emit(state.copyWith(error: e.toString()));
     }
   }

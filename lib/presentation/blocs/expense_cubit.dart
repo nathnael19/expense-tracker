@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/models/expense_model.dart';
@@ -78,13 +79,22 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   }
 
   Future<void> addExpense(ExpenseModel expense) async {
-    await _repository.addExpense(expense);
-    loadExpenses();
+    try {
+      await _repository.addExpense(expense);
+      loadExpenses();
+    } catch (e) {
+      debugPrint('Error adding expense: $e');
+      // Consider emitting an error state if ExpenseState supported it
+    }
   }
 
   Future<void> deleteExpense(String id) async {
-    await _repository.deleteExpense(id);
-    loadExpenses();
+    try {
+      await _repository.deleteExpense(id);
+      loadExpenses();
+    } catch (e) {
+      debugPrint('Error deleting expense: $e');
+    }
   }
 
   Future<void> _processRecurringTransactions() async {
