@@ -65,6 +65,9 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   Future<void> toggleReminder(bool value) async {
+    if (value) {
+      await NotificationService.requestPermissions();
+    }
     await StorageService.settingsBox.put('reminderEnabled', value);
     emit(state.copyWith(reminderEnabled: value));
     _updateNotification();

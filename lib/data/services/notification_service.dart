@@ -29,6 +29,18 @@ class NotificationService {
     await _notificationsPlugin.initialize(initializationSettings);
   }
 
+  static Future<void> requestPermissions() async {
+    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+        _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+
+    if (androidImplementation != null) {
+      await androidImplementation.requestNotificationsPermission();
+    }
+  }
+
   static Future<void> scheduleDailyReminder({
     required int id,
     required String title,
