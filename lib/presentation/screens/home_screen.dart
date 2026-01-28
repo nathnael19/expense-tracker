@@ -17,6 +17,7 @@ import 'settings_screen.dart';
 import 'debt_screen.dart';
 import '../widgets/streak_indicator.dart';
 import '../widgets/smart_empty_state.dart';
+import 'shopping_lists_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -75,6 +76,19 @@ class HomeScreen extends StatelessWidget {
               Navigator.of(
                 context,
               ).push(MaterialPageRoute(builder: (ctx) => const DebtScreen()));
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.shopping_cart_outlined,
+              color: isDarkMode ? Colors.white : Colors.black87,
+            ),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => const ShoppingListsScreen(),
+                ),
+              );
             },
           ),
           IconButton(

@@ -17,6 +17,8 @@ import 'presentation/blocs/budget_cubit.dart';
 import 'presentation/blocs/stats_cubit.dart';
 import 'presentation/blocs/sync_cubit.dart';
 import 'presentation/blocs/backup_cubit.dart';
+import 'presentation/blocs/shopping_cubit.dart';
+import 'data/repositories/shopping_repository.dart';
 import 'data/services/notification_service.dart';
 import 'presentation/screens/app_lock_screen.dart';
 import 'presentation/screens/splash_screen.dart';
@@ -54,6 +56,10 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(create: (_) => SyncCubit()),
         BlocProvider(create: (_) => BackupCubit()),
+        BlocProvider(
+          create: (_) =>
+              ShoppingCubit(ShoppingRepository())..loadShoppingLists(),
+        ),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
