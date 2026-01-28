@@ -121,44 +121,54 @@ class ShoppingListsScreen extends StatelessWidget {
                                 fontSize: 14,
                               ),
                             ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined, size: 20),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () =>
+                                _showAddListDialog(context, list: list),
+                          ),
                         ],
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 8),
-                          Text(
-                            DateFormat.yMMMd().format(list.dateCreated),
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 13,
+                          LinearProgressIndicator(
+                            value: progress,
+                            backgroundColor: isDarkMode
+                                ? Colors.grey[900]
+                                : Colors.grey[200],
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              progress == 1.0
+                                  ? Colors.green
+                                  : Theme.of(context).primaryColor,
                             ),
+                            borderRadius: BorderRadius.circular(4),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: LinearProgressIndicator(
-                                    value: progress,
-                                    backgroundColor: isDarkMode
-                                        ? Colors.grey[800]
-                                        : Colors.grey[200],
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                                    minHeight: 6,
-                                  ),
+                              Text(
+                                '$completedCount of $totalCount items completed',
+                                style: TextStyle(
+                                  color: isDarkMode
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
+                                  fontSize: 12,
                                 ),
                               ),
-                              const SizedBox(width: 12),
                               Text(
-                                '$completedCount/$totalCount',
+                                DateFormat(
+                                  'MMM d, yyyy',
+                                ).format(list.dateCreated),
                                 style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontSize: 13,
+                                  color: isDarkMode
+                                      ? Colors.grey[500]
+                                      : Colors.grey[500],
+                                  fontSize: 12,
                                 ),
                               ),
                             ],
@@ -173,7 +183,7 @@ class ShoppingListsScreen extends StatelessWidget {
           } else if (state is ShoppingError) {
             return Center(child: Text(state.message));
           }
-          return const Center(child: Text('Add your first shopping list!'));
+          return const Center(child: CircularProgressIndicator());
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -187,22 +197,35 @@ class ShoppingListsScreen extends StatelessWidget {
     );
   }
 
-  void _showAddListDialog(BuildContext context) {
-    final controller = TextEditingController();
+  void _showAddListDialog(BuildContext context, {ShoppingListModel? list}) {
+    final controller = TextEditingController(text: list?.name);
+    final isEditing = list != null;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('New Shopping List'),
+        title: Text(isEditing ? 'Rename' : 'New List'),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'Enter list name',
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
+            fillColor: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey[900]
+                : Colors.grey[100],
+            filled: true,
           ),
           onSubmitted: (value) {
             if (value.isNotEmpty) {
-              context.read<ShoppingCubit>().addShoppingList(value);
+              if (isEditing) {
+                context.read<ShoppingCubit>().renameShoppingList(
+                  list!.id,
+                  value,
+                );
+              } else {
+                context.read<ShoppingCubit>().addShoppingList(value);
+              }
               Navigator.pop(context);
             }
           },
@@ -215,11 +238,20 @@ class ShoppingListsScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
-                context.read<ShoppingCubit>().addShoppingList(controller.text);
+                if (isEditing) {
+                  context.read<ShoppingCubit>().renameShoppingList(
+                    list!.id,
+                    controller.text,
+                  );
+                } else {
+                  context.read<ShoppingCubit>().addShoppingList(
+                    controller.text,
+                  );
+                }
                 Navigator.pop(context);
               }
             },
-            child: const Text('Create'),
+            child: Text(isEditing ? 'Update' : 'Create'),
           ),
         ],
       ),

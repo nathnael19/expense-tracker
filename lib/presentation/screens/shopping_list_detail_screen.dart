@@ -112,6 +112,17 @@ class ShoppingListDetailScreen extends StatelessWidget {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, size: 18),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () => _showAddItemDialog(
+                                context,
+                                currentList!.id,
+                                item: item,
+                              ),
+                            ),
                           ],
                         ),
                         trailing: IconButton(
@@ -136,13 +147,23 @@ class ShoppingListDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showAddItemDialog(BuildContext context, String listId) {
-    final titleController = TextEditingController();
-    final costController = TextEditingController();
+  void _showAddItemDialog(
+    BuildContext context,
+    String listId, {
+    ShoppingItemModel? item,
+  }) {
+    final titleController = TextEditingController(text: item?.name);
+    final costController = TextEditingController(
+      text: item?.estimatedCost != null && item!.estimatedCost! > 0
+          ? item.estimatedCost!.toStringAsFixed(2)
+          : '',
+    );
+    final isEditing = item != null;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Item'),
+        title: Text(isEditing ? 'Edit Item' : 'Add Item'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -165,8 +186,13 @@ class ShoppingListDetailScreen extends StatelessWidget {
                 prefixText: 'ETB ',
                 border: OutlineInputBorder(),
               ),
-              onSubmitted: (_) =>
-                  _submit(context, listId, titleController, costController),
+              onSubmitted: (_) => _submit(
+                context,
+                listId,
+                titleController,
+                costController,
+                item: item,
+              ),
             ),
           ],
         ),
@@ -176,9 +202,14 @@ class ShoppingListDetailScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () =>
-                _submit(context, listId, titleController, costController),
-            child: const Text('Add'),
+            onPressed: () => _submit(
+              context,
+              listId,
+              titleController,
+              costController,
+              item: item,
+            ),
+            child: Text(isEditing ? 'Update' : 'Add'),
           ),
         ],
       ),
@@ -189,15 +220,25 @@ class ShoppingListDetailScreen extends StatelessWidget {
     BuildContext context,
     String listId,
     TextEditingController title,
-    TextEditingController cost,
-  ) {
+    TextEditingController cost, {
+    ShoppingItemModel? item,
+  }) {
     if (title.text.isNotEmpty) {
       final estimatedCost = double.tryParse(cost.text) ?? 0.0;
-      context.read<ShoppingCubit>().addItemToList(
-        listId,
-        title.text,
-        estimatedCost: estimatedCost,
-      );
+      if (item != null) {
+        context.read<ShoppingCubit>().editItemInList(
+          listId,
+          item.id,
+          title.text,
+          newEstimatedCost: estimatedCost,
+        );
+      } else {
+        context.read<ShoppingCubit>().addItemToList(
+          listId,
+          title.text,
+          estimatedCost: estimatedCost,
+        );
+      }
       Navigator.pop(context);
     }
   }

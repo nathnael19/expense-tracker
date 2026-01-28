@@ -36,6 +36,24 @@ class ShoppingCubit extends Cubit<ShoppingState> {
     }
   }
 
+  Future<void> renameShoppingList(String id, String newName) async {
+    if (state is ShoppingLoaded) {
+      final lists = (state as ShoppingLoaded).lists;
+      final listIndex = lists.indexWhere((l) => l.id == id);
+      if (listIndex != -1) {
+        final updatedList = lists[listIndex].copyWith(name: newName);
+        try {
+          await _repository.updateShoppingList(updatedList);
+          loadShoppingLists();
+        } catch (e) {
+          emit(
+            ShoppingError('Failed to rename shopping list: ${e.toString()}'),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> deleteShoppingList(String id) async {
     try {
       await _repository.deleteShoppingList(id);
@@ -116,6 +134,37 @@ class ShoppingCubit extends Cubit<ShoppingState> {
           loadShoppingLists();
         } catch (e) {
           emit(ShoppingError('Failed to remove item: ${e.toString()}'));
+        }
+      }
+    }
+  }
+
+  Future<void> editItemInList(
+    String listId,
+    String itemId,
+    String newName, {
+    double? newEstimatedCost,
+  }) async {
+    if (state is ShoppingLoaded) {
+      final lists = (state as ShoppingLoaded).lists;
+      final listIndex = lists.indexWhere((l) => l.id == listId);
+      if (listIndex != -1) {
+        final list = lists[listIndex];
+        final itemIndex = list.items.indexWhere((i) => i.id == itemId);
+        if (itemIndex != -1) {
+          final updatedItems = List<ShoppingItemModel>.from(list.items);
+          updatedItems[itemIndex] = updatedItems[itemIndex].copyWith(
+            name: newName,
+            estimatedCost: newEstimatedCost,
+          );
+
+          final updatedList = list.copyWith(items: updatedItems);
+          try {
+            await _repository.updateShoppingList(updatedList);
+            loadShoppingLists();
+          } catch (e) {
+            emit(ShoppingError('Failed to update item: ${e.toString()}'));
+          }
         }
       }
     }

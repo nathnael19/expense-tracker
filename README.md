@@ -18,8 +18,10 @@ A powerful, secure, and offline-first personal finance application offering simp
 
 ### 📋 Shopping Lists
 - **Multi-List Management**: Create and manage multiple shopping lists for different needs (e.g., Groceries, Electronics).
-- **Item Tracking**: Add items to lists and mark them as completed while you shop.
-- **Progress Visualization**: View completion progress for each list at a glance with integrated progress bars.
+- **Item Tracking & Costs**: Add items with **estimated costs** and mark them as completed while you shop.
+- **Budget Tracking**: View the **total estimated cost** for each list at a glance in the overview screen.
+- **Editing & Renaming**: Easily rename shopping lists and update item names or costs at any time.
+- **Progress Visualization**: Monitor your shopping progress with integrated progress bars for each list.
 - **Quick Organization**: Swipe to delete lists or items no longer needed.
 
 ### 🤝 Lending Manager (Debt Tracking)
