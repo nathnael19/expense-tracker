@@ -13,17 +13,27 @@ class ShoppingItemModel extends HiveObject {
   @HiveField(2)
   final bool isCompleted;
 
+  @HiveField(3)
+  final double? estimatedCost;
+
   ShoppingItemModel({
     required this.id,
     required this.name,
     this.isCompleted = false,
+    this.estimatedCost,
   });
 
-  ShoppingItemModel copyWith({String? id, String? name, bool? isCompleted}) {
+  ShoppingItemModel copyWith({
+    String? id,
+    String? name,
+    bool? isCompleted,
+    double? estimatedCost,
+  }) {
     return ShoppingItemModel(
       id: id ?? this.id,
       name: name ?? this.name,
       isCompleted: isCompleted ?? this.isCompleted,
+      estimatedCost: estimatedCost ?? this.estimatedCost,
     );
   }
 }

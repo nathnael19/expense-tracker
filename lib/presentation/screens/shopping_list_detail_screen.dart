@@ -83,15 +83,36 @@ class ShoppingListDetailScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
-                        title: Text(
-                          item.name,
-                          style: TextStyle(
-                            decoration: item.isCompleted
-                                ? TextDecoration.lineThrough
-                                : null,
-                            color: item.isCompleted ? Colors.grey : null,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                item.name,
+                                style: TextStyle(
+                                  decoration: item.isCompleted
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                  color: item.isCompleted ? Colors.grey : null,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            if (item.estimatedCost != null &&
+                                item.estimatedCost! > 0)
+                              Text(
+                                '${item.isCompleted ? "" : "ETB "}${item.estimatedCost?.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  decoration: item.isCompleted
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                  color: item.isCompleted
+                                      ? Colors.grey
+                                      : Colors.grey[600],
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                          ],
                         ),
                         trailing: IconButton(
                           icon: const Icon(Icons.close, size: 20),
@@ -116,24 +137,38 @@ class ShoppingListDetailScreen extends StatelessWidget {
   }
 
   void _showAddItemDialog(BuildContext context, String listId) {
-    final controller = TextEditingController();
+    final titleController = TextEditingController();
+    final costController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Add Item'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Item name',
-            border: OutlineInputBorder(),
-          ),
-          onSubmitted: (value) {
-            if (value.isNotEmpty) {
-              context.read<ShoppingCubit>().addItemToList(listId, value);
-              Navigator.pop(context);
-            }
-          },
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: 'Item name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: costController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(
+                hintText: 'Estimated cost (optional)',
+                prefixText: 'ETB ',
+                border: OutlineInputBorder(),
+              ),
+              onSubmitted: (_) =>
+                  _submit(context, listId, titleController, costController),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -141,19 +176,29 @@ class ShoppingListDetailScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                context.read<ShoppingCubit>().addItemToList(
-                  listId,
-                  controller.text,
-                );
-                Navigator.pop(context);
-              }
-            },
+            onPressed: () =>
+                _submit(context, listId, titleController, costController),
             child: const Text('Add'),
           ),
         ],
       ),
     );
+  }
+
+  void _submit(
+    BuildContext context,
+    String listId,
+    TextEditingController title,
+    TextEditingController cost,
+  ) {
+    if (title.text.isNotEmpty) {
+      final estimatedCost = double.tryParse(cost.text) ?? 0.0;
+      context.read<ShoppingCubit>().addItemToList(
+        listId,
+        title.text,
+        estimatedCost: estimatedCost,
+      );
+      Navigator.pop(context);
+    }
   }
 }

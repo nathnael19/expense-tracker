@@ -45,7 +45,11 @@ class ShoppingCubit extends Cubit<ShoppingState> {
     }
   }
 
-  Future<void> addItemToList(String listId, String itemName) async {
+  Future<void> addItemToList(
+    String listId,
+    String itemName, {
+    double estimatedCost = 0.0,
+  }) async {
     if (state is ShoppingLoaded) {
       final lists = (state as ShoppingLoaded).lists;
       final listIndex = lists.indexWhere((l) => l.id == listId);
@@ -54,6 +58,7 @@ class ShoppingCubit extends Cubit<ShoppingState> {
         final newItem = ShoppingItemModel(
           id: _uuid.v4(),
           name: itemName,
+          estimatedCost: estimatedCost,
           isCompleted: false,
         );
         final updatedItems = List<ShoppingItemModel>.from(list.items)

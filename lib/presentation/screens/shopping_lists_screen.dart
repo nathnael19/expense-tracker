@@ -58,6 +58,10 @@ class ShoppingListsScreen extends StatelessWidget {
                 final progress = totalCount == 0
                     ? 0.0
                     : completedCount / totalCount;
+                final totalEstimatedCost = list.items.fold<double>(
+                  0,
+                  (sum, item) => sum + (item.estimatedCost ?? 0.0),
+                );
 
                 return Dismissible(
                   key: ValueKey(list.id),
@@ -96,12 +100,28 @@ class ShoppingListsScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      title: Text(
-                        list.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              list.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
+                          if (totalEstimatedCost > 0)
+                            Text(
+                              'ETB ${totalEstimatedCost.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                                fontSize: 14,
+                              ),
+                            ),
+                        ],
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
