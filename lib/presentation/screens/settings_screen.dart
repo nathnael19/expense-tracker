@@ -8,6 +8,7 @@ import 'category_management_screen.dart';
 import '../blocs/settings_cubit.dart';
 import '../blocs/theme_cubit.dart';
 import '../blocs/sync_cubit.dart';
+import '../blocs/backup_cubit.dart';
 import '../../data/services/backup_service.dart';
 import '../../data/services/security_service.dart';
 import 'budget_screen.dart';
@@ -304,6 +305,99 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                             if (confirm == true && context.mounted) {
                               context.read<SyncCubit>().restoreBackup();
+                            }
+                          },
+                  ),
+                ],
+              );
+            },
+          ),
+
+          const Divider(),
+
+          // Firestore Backup Section
+          _buildSectionHeader('Firestore Backup'),
+          BlocConsumer<BackupCubit, BackupState>(
+            listener: (context, backupState) {
+              if (backupState.status == BackupStatus.success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Backup successful!')),
+                );
+                context.read<BackupCubit>().resetStatus();
+              } else if (backupState.status == BackupStatus.error) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(backupState.errorMessage ?? 'Backup failed'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                context.read<BackupCubit>().resetStatus();
+              }
+            },
+            builder: (context, backupState) {
+              return Column(
+                children: [
+                  if (backupState.lastBackupTime != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Last backup: ${DateFormat('MMM d, y h:mm a').format(backupState.lastBackupTime!)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                      ),
+                    ),
+                  const Gap(8),
+                  ListTile(
+                    leading: const Icon(Icons.cloud_upload),
+                    title: const Text('Backup to Cloud'),
+                    subtitle: const Text('Save your data to Firestore'),
+                    trailing: backupState.status == BackupStatus.backing_up
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : null,
+                    onTap: backupState.status == BackupStatus.backing_up
+                        ? null
+                        : () {
+                            context.read<BackupCubit>().uploadBackup();
+                          },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.cloud_download),
+                    title: const Text('Restore from Cloud'),
+                    subtitle: const Text('Download and restore backup'),
+                    onTap: backupState.status == BackupStatus.backing_up
+                        ? null
+                        : () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Restore from Cloud?'),
+                                content: const Text(
+                                  'This will OVERWRITE all current data with your cloud backup. Are you sure?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    child: const Text(
+                                      'Restore',
+                                      style: TextStyle(color: Colors.orange),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true && context.mounted) {
+                              context.read<BackupCubit>().restoreBackup();
                             }
                           },
                   ),

@@ -16,6 +16,7 @@ import 'presentation/blocs/shortcut_cubit.dart';
 import 'presentation/blocs/budget_cubit.dart';
 import 'presentation/blocs/stats_cubit.dart';
 import 'presentation/blocs/sync_cubit.dart';
+import 'presentation/blocs/backup_cubit.dart';
 import 'data/services/notification_service.dart';
 import 'presentation/screens/app_lock_screen.dart';
 import 'presentation/screens/splash_screen.dart';
@@ -52,6 +53,7 @@ class MyApp extends StatelessWidget {
               StatsCubit(expenseCubit: context.read<ExpenseCubit>()),
         ),
         BlocProvider(create: (_) => SyncCubit()),
+        BlocProvider(create: (_) => BackupCubit()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
