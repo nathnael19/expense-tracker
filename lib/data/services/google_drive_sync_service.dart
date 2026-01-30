@@ -64,6 +64,7 @@ class GoogleDriveSyncService {
       client.close();
       return true;
     } catch (e) {
+      print('GOOGLE_DRIVE_SYNC_SERVICE uploadData ERROR: $e');
       return false;
     }
   }
@@ -104,6 +105,7 @@ class GoogleDriveSyncService {
       client.close();
       return data;
     } catch (e) {
+      print('GOOGLE_DRIVE_SYNC_SERVICE downloadData ERROR: $e');
       return null;
     }
   }
@@ -144,6 +146,7 @@ class GoogleDriveSyncService {
         return await uploadData();
       }
     } catch (e) {
+      print('GOOGLE_DRIVE_SYNC_SERVICE syncData ERROR: $e');
       return false;
     }
   }
@@ -160,6 +163,7 @@ class GoogleDriveSyncService {
       await _setLastSyncTime(DateTime.now());
       return true;
     } catch (e) {
+      print('GOOGLE_DRIVE_SYNC_SERVICE restoreFromCloud ERROR: $e');
       return false;
     }
   }
@@ -182,6 +186,7 @@ class GoogleDriveSyncService {
       client.close();
       return true;
     } catch (e) {
+      print('GOOGLE_DRIVE_SYNC_SERVICE deleteBackup ERROR: $e');
       return false;
     }
   }

@@ -69,7 +69,9 @@ class SyncCubit extends Cubit<SyncState> {
           ),
         );
       }
-    } catch (e) {
+    } catch (e, stack) {
+      print('SYNC_CUBIT SIGNIN ERROR: $e');
+      print(stack);
       emit(
         state.copyWith(
           status: SyncStatus.error,
