@@ -8,6 +8,8 @@ import '../models/category_model.dart';
 import '../models/shortcut_model.dart';
 import '../models/debt_model.dart';
 import '../models/budget_model.dart';
+import '../models/shopping_list_model.dart';
+import '../models/shopping_item_model.dart';
 
 class GoogleDriveSyncService {
   static final GoogleDriveSyncService _instance =
@@ -62,6 +64,7 @@ class GoogleDriveSyncService {
       client.close();
       return true;
     } catch (e) {
+      print('GOOGLE_DRIVE_SYNC_SERVICE uploadData ERROR: $e');
       return false;
     }
   }
@@ -102,6 +105,7 @@ class GoogleDriveSyncService {
       client.close();
       return data;
     } catch (e) {
+      print('GOOGLE_DRIVE_SYNC_SERVICE downloadData ERROR: $e');
       return null;
     }
   }
@@ -142,6 +146,7 @@ class GoogleDriveSyncService {
         return await uploadData();
       }
     } catch (e) {
+      print('GOOGLE_DRIVE_SYNC_SERVICE syncData ERROR: $e');
       return false;
     }
   }
@@ -158,6 +163,7 @@ class GoogleDriveSyncService {
       await _setLastSyncTime(DateTime.now());
       return true;
     } catch (e) {
+      print('GOOGLE_DRIVE_SYNC_SERVICE restoreFromCloud ERROR: $e');
       return false;
     }
   }
@@ -180,6 +186,7 @@ class GoogleDriveSyncService {
       client.close();
       return true;
     } catch (e) {
+      print('GOOGLE_DRIVE_SYNC_SERVICE deleteBackup ERROR: $e');
       return false;
     }
   }
@@ -263,6 +270,25 @@ class GoogleDriveSyncService {
             },
           )
           .toList(),
+      'shopping_lists': StorageService.shoppingListBox.values
+          .map(
+            (l) => {
+              'id': l.id,
+              'name': l.name,
+              'dateCreated': l.dateCreated.toIso8601String(),
+              'items': l.items
+                  .map(
+                    (i) => {
+                      'id': i.id,
+                      'name': i.name,
+                      'isCompleted': i.isCompleted,
+                      'estimatedCost': i.estimatedCost,
+                    },
+                  )
+                  .toList(),
+            },
+          )
+          .toList(),
     };
   }
 
@@ -274,6 +300,7 @@ class GoogleDriveSyncService {
     await StorageService.shortcutBox.clear();
     await StorageService.debtBox.clear();
     await StorageService.budgetBox.clear();
+    await StorageService.shoppingListBox.clear();
 
     // Import expenses
     final expenses = data['expenses'] as List<dynamic>? ?? [];
@@ -308,6 +335,13 @@ class GoogleDriveSyncService {
     for (var budgetData in budgets) {
       final budget = _budgetFromJson(budgetData as Map<String, dynamic>);
       await StorageService.budgetBox.put(budget.id, budget);
+    }
+
+    // Import shopping lists
+    final shoppingLists = data['shopping_lists'] as List<dynamic>? ?? [];
+    for (var listData in shoppingLists) {
+      final list = _shoppingListFromJson(listData as Map<String, dynamic>);
+      await StorageService.shoppingListBox.put(list.id, list);
     }
   }
 
@@ -374,6 +408,28 @@ class GoogleDriveSyncService {
       month: json['month'] as int,
       year: json['year'] as int,
       categoryId: json['categoryId'] as String?,
+    );
+  }
+
+  ShoppingListModel _shoppingListFromJson(Map<String, dynamic> json) {
+    return ShoppingListModel(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      dateCreated: DateTime.parse(json['dateCreated'] as String),
+      items: (json['items'] as List<dynamic>)
+          .map((i) => _shoppingItemFromJson(i as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  ShoppingItemModel _shoppingItemFromJson(Map<String, dynamic> json) {
+    return ShoppingItemModel(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      isCompleted: json['isCompleted'] as bool? ?? false,
+      estimatedCost: json['estimatedCost'] != null
+          ? (json['estimatedCost'] as num).toDouble()
+          : null,
     );
   }
 }

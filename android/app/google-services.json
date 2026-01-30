@@ -12,7 +12,20 @@
           "package_name": "com.nathnael.expense_tracker_offline"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "28701956439-g3l8jq3109gsb7bhlcbnddh73st34jjf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nathnael.expense_tracker_offline",
+            "certificate_hash": "0d5e0f0e171a74a756e66c20838c97986592be00"
+          }
+        },
+        {
+          "client_id": "28701956439-c8sq2oduugo25locror3h7v07r6e030v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDmRjJ6Ab3HC7tL9Ckn9aZ5lRFUbYtZ1So"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "28701956439-c8sq2oduugo25locror3h7v07r6e030v.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "28701956439-ko5olrhipiu27ppc9cdfvl1ssqhg29m2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.expenseTrackerOffline"
+              }
+            }
+          ]
         }
       }
     }

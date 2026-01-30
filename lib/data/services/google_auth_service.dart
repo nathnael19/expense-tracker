@@ -30,7 +30,8 @@ class GoogleAuthService {
       _currentUser = account;
       return account;
     } catch (e) {
-      return null;
+      print('GOOGLE_AUTH_SERVICE ERROR: $e');
+      rethrow;
     }
   }
 

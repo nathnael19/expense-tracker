@@ -3,10 +3,9 @@
 import 'package:expense_tracker_offline/presentation/blocs/debt_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'data/local/storage_service.dart';
-import 'firebase_options.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/blocs/theme_cubit.dart';
 import 'presentation/blocs/settings_cubit.dart';
@@ -16,7 +15,6 @@ import 'presentation/blocs/shortcut_cubit.dart';
 import 'presentation/blocs/budget_cubit.dart';
 import 'presentation/blocs/stats_cubit.dart';
 import 'presentation/blocs/sync_cubit.dart';
-import 'presentation/blocs/backup_cubit.dart';
 import 'presentation/blocs/shopping_cubit.dart';
 import 'data/repositories/shopping_repository.dart';
 import 'data/services/notification_service.dart';
@@ -28,7 +26,7 @@ void main() async {
 
   // Initialize services in parallel
   await Future.wait([
-    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+    Firebase.initializeApp(),
     StorageService.init(),
     NotificationService.init(),
   ]);
@@ -55,7 +53,6 @@ class MyApp extends StatelessWidget {
               StatsCubit(expenseCubit: context.read<ExpenseCubit>()),
         ),
         BlocProvider(create: (_) => SyncCubit()),
-        BlocProvider(create: (_) => BackupCubit()),
         BlocProvider(
           create: (_) =>
               ShoppingCubit(ShoppingRepository())..loadShoppingLists(),
