@@ -65,7 +65,7 @@ class SyncCubit extends Cubit<SyncState> {
         emit(
           state.copyWith(
             status: SyncStatus.error,
-            errorMessage: 'Sign-in cancelled or failed',
+            errorMessage: 'Sign-in cancelled',
           ),
         );
       }

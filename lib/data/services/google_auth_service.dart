@@ -30,7 +30,7 @@ class GoogleAuthService {
       _currentUser = account;
       return account;
     } catch (e) {
-      return null;
+      rethrow;
     }
   }
 
