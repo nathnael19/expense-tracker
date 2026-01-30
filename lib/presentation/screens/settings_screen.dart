@@ -353,14 +353,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     leading: const Icon(Icons.cloud_upload),
                     title: const Text('Backup to Cloud'),
                     subtitle: const Text('Save your data to Firestore'),
-                    trailing: backupState.status == BackupStatus.backing_up
+                    trailing: backupState.status == BackupStatus.backingUp
                         ? const SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : null,
-                    onTap: backupState.status == BackupStatus.backing_up
+                    onTap: backupState.status == BackupStatus.backingUp
                         ? null
                         : () {
                             context.read<BackupCubit>().uploadBackup();
@@ -370,7 +370,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     leading: const Icon(Icons.cloud_download),
                     title: const Text('Restore from Cloud'),
                     subtitle: const Text('Download and restore backup'),
-                    onTap: backupState.status == BackupStatus.backing_up
+                    onTap: backupState.status == BackupStatus.backingUp
                         ? null
                         : () async {
                             final confirm = await showDialog<bool>(

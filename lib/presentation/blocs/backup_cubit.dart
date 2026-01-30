@@ -3,7 +3,7 @@ import 'package:uuid/uuid.dart';
 import '../../data/services/firestore_backup_service.dart';
 import '../../data/local/storage_service.dart';
 
-enum BackupStatus { idle, backing_up, success, error }
+enum BackupStatus { idle, backingUp, success, error }
 
 class BackupState {
   final BackupStatus status;
@@ -49,7 +49,7 @@ class BackupCubit extends Cubit<BackupState> {
   /// Upload backup to Firestore
   Future<void> uploadBackup() async {
     try {
-      emit(state.copyWith(status: BackupStatus.backing_up, clearError: true));
+      emit(state.copyWith(status: BackupStatus.backingUp, clearError: true));
 
       final success = await _backupService.uploadBackup(state.userId);
 
@@ -82,7 +82,7 @@ class BackupCubit extends Cubit<BackupState> {
   /// Restore backup from Firestore
   Future<void> restoreBackup() async {
     try {
-      emit(state.copyWith(status: BackupStatus.backing_up, clearError: true));
+      emit(state.copyWith(status: BackupStatus.backingUp, clearError: true));
 
       final success = await _backupService.restoreBackup(state.userId);
 

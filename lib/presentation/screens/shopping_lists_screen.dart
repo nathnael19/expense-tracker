@@ -220,7 +220,7 @@ class ShoppingListsScreen extends StatelessWidget {
             if (value.isNotEmpty) {
               if (isEditing) {
                 context.read<ShoppingCubit>().renameShoppingList(
-                  list!.id,
+                  list.id,
                   value,
                 );
               } else {
@@ -240,7 +240,7 @@ class ShoppingListsScreen extends StatelessWidget {
               if (controller.text.isNotEmpty) {
                 if (isEditing) {
                   context.read<ShoppingCubit>().renameShoppingList(
-                    list!.id,
+                    list.id,
                     controller.text,
                   );
                 } else {

@@ -15,15 +15,9 @@ class ShoppingListDetailScreen extends StatelessWidget {
     return BlocBuilder<ShoppingCubit, ShoppingState>(
       builder: (context, state) {
         // Find the current list in the state
-        ShoppingListModel? currentList;
-        if (state is ShoppingLoaded) {
-          currentList = state.lists.firstWhere(
-            (l) => l.id == list.id,
-            orElse: () => list,
-          );
-        } else {
-          currentList = list;
-        }
+        final ShoppingListModel currentList = (state is ShoppingLoaded)
+            ? state.lists.firstWhere((l) => l.id == list.id, orElse: () => list)
+            : list;
 
         return Scaffold(
           appBar: AppBar(
@@ -54,7 +48,7 @@ class ShoppingListDetailScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: currentList.items.length,
                   itemBuilder: (context, index) {
-                    final item = currentList!.items[index];
+                    final item = currentList.items[index];
                     return Dismissible(
                       key: ValueKey(item.id),
                       direction: DismissDirection.endToStart,
@@ -66,7 +60,7 @@ class ShoppingListDetailScreen extends StatelessWidget {
                       ),
                       onDismissed: (_) {
                         context.read<ShoppingCubit>().removeItemFromList(
-                          currentList!.id,
+                          currentList.id,
                           item.id,
                         );
                       },
@@ -75,7 +69,7 @@ class ShoppingListDetailScreen extends StatelessWidget {
                           value: item.isCompleted,
                           onChanged: (_) {
                             context.read<ShoppingCubit>().toggleItemCompletion(
-                              currentList!.id,
+                              currentList.id,
                               item.id,
                             );
                           },
@@ -119,7 +113,7 @@ class ShoppingListDetailScreen extends StatelessWidget {
                               constraints: const BoxConstraints(),
                               onPressed: () => _showAddItemDialog(
                                 context,
-                                currentList!.id,
+                                currentList.id,
                                 item: item,
                               ),
                             ),
@@ -129,7 +123,7 @@ class ShoppingListDetailScreen extends StatelessWidget {
                           icon: const Icon(Icons.close, size: 20),
                           onPressed: () {
                             context.read<ShoppingCubit>().removeItemFromList(
-                              currentList!.id,
+                              currentList.id,
                               item.id,
                             );
                           },
@@ -139,7 +133,7 @@ class ShoppingListDetailScreen extends StatelessWidget {
                   },
                 ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => _showAddItemDialog(context, currentList!.id),
+            onPressed: () => _showAddItemDialog(context, currentList.id),
             child: const Icon(Icons.add),
           ),
         );
