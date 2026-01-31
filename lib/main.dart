@@ -19,7 +19,6 @@ import 'presentation/blocs/shopping_cubit.dart';
 import 'data/repositories/shopping_repository.dart';
 import 'data/services/notification_service.dart';
 import 'presentation/screens/app_lock_screen.dart';
-import 'presentation/screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -127,7 +126,7 @@ class MyApp extends StatelessWidget {
                 scrolledUnderElevation: 0,
               ),
             ),
-            home: const SplashScreen(),
+            home: const MainWrapper(),
           );
         },
       ),
