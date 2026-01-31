@@ -4,10 +4,10 @@ import '../../data/models/shortcut_model.dart';
 
 class ShortcutCubit extends Cubit<List<ShortcutModel>> {
   ShortcutCubit() : super([]) {
-    Future.microtask(() => _loadShortcuts());
+    Future.microtask(() => loadShortcuts());
   }
 
-  void _loadShortcuts() {
+  void loadShortcuts() {
     try {
       if (StorageService.shortcutBox.isOpen) {
         emit(StorageService.shortcutBox.values.toList());

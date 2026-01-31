@@ -11,21 +11,21 @@ class CategoryCubit extends Cubit<List<CategoryModel>> {
 
   Future<void> _init() async {
     await _repository.initDefaultCategories();
-    _reload();
+    loadCategories();
   }
 
-  void _reload() {
+  void loadCategories() {
     emit(_repository.getAllCategories());
   }
 
   Future<void> addCategory(CategoryModel category) async {
     await _repository.addCategory(category);
-    _reload();
+    loadCategories();
   }
 
   Future<void> deleteCategory(String id) async {
     await _repository.deleteCategory(id);
-    _reload();
+    loadCategories();
   }
 
   CategoryModel? getCategoryById(String id) {

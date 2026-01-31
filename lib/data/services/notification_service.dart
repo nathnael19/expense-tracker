@@ -9,6 +9,9 @@ class NotificationService {
 
   static Future<void> init() async {
     tz.initializeTimeZones();
+    // Set the local timezone to the device's timezone
+    // This ensures scheduled notifications use the correct local time
+    tz.setLocalLocation(tz.getLocation('Africa/Nairobi')); // GMT+3
 
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/launcher_icon');
@@ -38,6 +41,16 @@ class NotificationService {
 
     if (androidImplementation != null) {
       await androidImplementation.requestNotificationsPermission();
+
+      // Request exact alarm permission for Android 12+ (API 31+)
+      final bool? exactAlarmGranted = await androidImplementation
+          .requestExactAlarmsPermission();
+
+      if (exactAlarmGranted == false) {
+        debugPrint(
+          'Exact alarm permission denied. Scheduled notifications may not work.',
+        );
+      }
     }
   }
 

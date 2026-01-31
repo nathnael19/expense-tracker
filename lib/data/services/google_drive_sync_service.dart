@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:http/http.dart' as http;
 import 'google_auth_service.dart';
@@ -64,7 +65,7 @@ class GoogleDriveSyncService {
       client.close();
       return true;
     } catch (e) {
-      print('GOOGLE_DRIVE_SYNC_SERVICE uploadData ERROR: $e');
+      debugPrint('GOOGLE_DRIVE_SYNC_SERVICE uploadData ERROR: $e');
       return false;
     }
   }
@@ -105,7 +106,7 @@ class GoogleDriveSyncService {
       client.close();
       return data;
     } catch (e) {
-      print('GOOGLE_DRIVE_SYNC_SERVICE downloadData ERROR: $e');
+      debugPrint('GOOGLE_DRIVE_SYNC_SERVICE downloadData ERROR: $e');
       return null;
     }
   }
@@ -146,7 +147,7 @@ class GoogleDriveSyncService {
         return await uploadData();
       }
     } catch (e) {
-      print('GOOGLE_DRIVE_SYNC_SERVICE syncData ERROR: $e');
+      debugPrint('GOOGLE_DRIVE_SYNC_SERVICE syncData ERROR: $e');
       return false;
     }
   }
@@ -163,7 +164,7 @@ class GoogleDriveSyncService {
       await _setLastSyncTime(DateTime.now());
       return true;
     } catch (e) {
-      print('GOOGLE_DRIVE_SYNC_SERVICE restoreFromCloud ERROR: $e');
+      debugPrint('GOOGLE_DRIVE_SYNC_SERVICE restoreFromCloud ERROR: $e');
       return false;
     }
   }
@@ -186,7 +187,7 @@ class GoogleDriveSyncService {
       client.close();
       return true;
     } catch (e) {
-      print('GOOGLE_DRIVE_SYNC_SERVICE deleteBackup ERROR: $e');
+      debugPrint('GOOGLE_DRIVE_SYNC_SERVICE deleteBackup ERROR: $e');
       return false;
     }
   }

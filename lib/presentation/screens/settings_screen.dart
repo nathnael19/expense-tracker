@@ -8,6 +8,12 @@ import 'category_management_screen.dart';
 import '../blocs/settings_cubit.dart';
 import '../blocs/theme_cubit.dart';
 import '../blocs/sync_cubit.dart';
+import '../blocs/expense_cubit.dart';
+import '../blocs/category_cubit.dart';
+import '../blocs/budget_cubit.dart';
+import '../blocs/debt_cubit.dart';
+import '../blocs/shopping_cubit.dart';
+import '../blocs/shortcut_cubit.dart';
 
 import '../../data/services/security_service.dart';
 import 'budget_screen.dart';
@@ -168,6 +174,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Sync successful!')),
                 );
+
+                // Reload data in all cubits to reflect restored data
+                context.read<ExpenseCubit>().loadExpenses();
+                context.read<CategoryCubit>().loadCategories();
+                context.read<BudgetCubit>().loadBudgets();
+                context.read<DebtCubit>().loadDebts();
+                context.read<ShoppingCubit>().loadShoppingLists();
+                context.read<ShortcutCubit>().loadShortcuts();
+
                 context.read<SyncCubit>().resetStatus();
               } else if (syncState.status == SyncStatus.error) {
                 ScaffoldMessenger.of(context).showSnackBar(

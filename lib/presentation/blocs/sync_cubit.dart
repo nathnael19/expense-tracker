@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../data/services/google_auth_service.dart';
@@ -70,8 +71,8 @@ class SyncCubit extends Cubit<SyncState> {
         );
       }
     } catch (e, stack) {
-      print('SYNC_CUBIT SIGNIN ERROR: $e');
-      print(stack);
+      debugPrint('SYNC_CUBIT SIGNIN ERROR: $e');
+      debugPrint(stack.toString());
       emit(
         state.copyWith(
           status: SyncStatus.error,

@@ -42,11 +42,15 @@ class DebtCubit extends Cubit<DebtState> {
   Future<void> _init() async {
     try {
       _box = await Hive.openBox<DebtModel>(boxName);
-      emit(state.copyWith(debts: _box.values.toList(), isLoading: false));
+      loadDebts();
     } catch (e) {
       debugPrint('Error initializing DebtCubit: $e');
       emit(state.copyWith(error: e.toString(), isLoading: false));
     }
+  }
+
+  void loadDebts() {
+    emit(state.copyWith(debts: _box.values.toList(), isLoading: false));
   }
 
   Future<void> addDebt(DebtModel debt) async {

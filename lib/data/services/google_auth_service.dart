@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:http/http.dart' as http;
@@ -30,7 +31,7 @@ class GoogleAuthService {
       _currentUser = account;
       return account;
     } catch (e) {
-      print('GOOGLE_AUTH_SERVICE ERROR: $e');
+      debugPrint('GOOGLE_AUTH_SERVICE ERROR: $e');
       rethrow;
     }
   }
