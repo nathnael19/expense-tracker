@@ -17,6 +17,7 @@ class StorageService {
   static const String budgetBoxName = 'budgets';
   static const String shoppingListBoxName = 'shopping_lists';
   static const String personBoxName = 'persons';
+  static const String processedSmsBoxName = 'processed_sms';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -41,6 +42,7 @@ class StorageService {
     await Hive.openBox<ShoppingListModel>(shoppingListBoxName);
     await Hive.openBox<PersonModel>(personBoxName);
     await Hive.openBox(settingsBoxName);
+    await Hive.openBox<String>(processedSmsBoxName);
   }
 
   static Box<ExpenseModel> get expenseBox =>
@@ -55,6 +57,7 @@ class StorageService {
       Hive.box<ShoppingListModel>(shoppingListBoxName);
   static Box<PersonModel> get personBox => Hive.box<PersonModel>(personBoxName);
   static Box get settingsBox => Hive.box(settingsBoxName);
+  static Box<String> get processedSmsBox => Hive.box<String>(processedSmsBoxName);
 
   // Helper methods for Expenses
   Future<void> addExpense(ExpenseModel expense) async {
