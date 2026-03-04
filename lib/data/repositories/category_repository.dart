@@ -51,6 +51,11 @@ class CategoryRepository {
           name: 'Health',
           iconCode: LucideIcons.activity.codePoint,
         ),
+        CategoryModel(
+          id: 'uncategorized',
+          name: 'Uncategorized',
+          iconCode: LucideIcons.helpCircle.codePoint, // If this fails, I'll try another name
+        ),
       ];
 
       for (var cat in defaults) {
