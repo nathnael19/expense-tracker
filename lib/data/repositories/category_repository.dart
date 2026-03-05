@@ -54,7 +54,7 @@ class CategoryRepository {
         CategoryModel(
           id: 'uncategorized',
           name: 'Uncategorized',
-          iconCode: LucideIcons.helpCircle.codePoint, // If this fails, I'll try another name
+          iconCode: LucideIcons.circle.codePoint,
         ),
       ];
 
