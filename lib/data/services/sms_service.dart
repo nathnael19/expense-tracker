@@ -1,4 +1,4 @@
-import 'package:telephony/telephony.dart';
+import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 import '../local/storage_service.dart';
 import '../models/expense_model.dart';
@@ -9,15 +9,10 @@ import 'notification_service.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
-// Top level function for background SMS handling
-@pragma('vm:entry-point')
-void backGroundMessageHandler(SmsMessage message) async {
-  // Pass to SmsService for processing
-  await SmsService().processMessage(message, fromBackground: true);
-}
-
 class SmsService {
-  final Telephony telephony = Telephony.instance;
+  static const MethodChannel _channel = MethodChannel('com.nathnael19.expense_tracker_offline/sms');
+  static const EventChannel _eventChannel = EventChannel('com.nathnael19.expense_tracker_offline/sms_stream');
+
   final ExpenseRepository _expenseRepository = ExpenseRepository();
   final CategoryRepository _categoryRepository = CategoryRepository();
 
@@ -25,45 +20,49 @@ class SmsService {
   factory SmsService() => _instance;
   SmsService._internal();
 
-  Future<void> init() async {
-    final bool? result = await telephony.requestSmsPermissions;
-    if (result != null && result) {
-      telephony.listenIncomingSms(
-        onNewMessage: (SmsMessage message) {
-          processMessage(message);
-        },
-        onBackgroundMessage: backGroundMessageHandler,
-      );
+  /// Request SMS permissions from Android.
+  Future<bool> requestPermissions() async {
+    try {
+      final bool granted = await _channel.invokeMethod('requestSmsPermissions');
+      return granted;
+    } catch (e) {
+      return false;
     }
   }
 
-  Future<void> processMessage(SmsMessage message, {bool fromBackground = false}) async {
-    final body = message.body;
-    if (body == null) return;
+  /// Start listening for incoming SMS via the event channel.
+  void init() {
+    _eventChannel.receiveBroadcastStream().listen((dynamic event) {
+      if (event is Map) {
+        final body = event['body'] as String?;
+        final address = event['address'] as String?;
+        final date = event['date'] as int?;
+        if (body != null) {
+          _onSmsReceived(body: body, address: address, date: date);
+        }
+      }
+    });
+  }
 
+  Future<void> _onSmsReceived({required String body, String? address, int? date}) async {
     // 1. Check if SMS detection is enabled in settings
-    // In background isolate, we must ensure Hive is initialized
-    if (fromBackground) {
-      await StorageService.init();
-    }
-
     final isEnabled = StorageService.settingsBox.get('smsDetectionEnabled', defaultValue: false);
     if (!isEnabled) return;
 
     // 2. Duplicate Protection (Hash of message body + address + timestamp)
-    final msgId = _generateMsgId(message);
+    final msgId = _generateMsgId(body: body, address: address, date: date);
     if (StorageService.processedSmsBox.containsKey(msgId)) return;
 
     // 3. Parse Message
-    final timestamp = DateTime.fromMillisecondsSinceEpoch(message.date ?? DateTime.now().millisecondsSinceEpoch);
+    final timestamp = DateTime.fromMillisecondsSinceEpoch(date ?? DateTime.now().millisecondsSinceEpoch);
     final parsed = SmsParser.parse(body, timestamp);
     if (parsed == null) return;
 
-    // 4. Get or Create "Uncategorized" Category
+    // 4. Get "Uncategorized" Category
     final categories = _categoryRepository.getAllCategories();
-    var uncategorized = categories.firstWhere(
+    final uncategorized = categories.firstWhere(
       (c) => c.name.toLowerCase() == 'uncategorized',
-      orElse: () => categories.first, // Fallback to first if not found
+      orElse: () => categories.first,
     );
 
     // 5. Create Expense
@@ -78,12 +77,11 @@ class SmsService {
 
     // 6. Save Expense
     await _expenseRepository.addExpense(expense);
-    
+
     // 7. Mark as processed
     await StorageService.processedSmsBox.put(msgId, msgId);
 
     // 8. Show Notification
-    await NotificationService.init(); // Ensure init for notification
     await NotificationService.showNotification(
       id: msgId.hashCode,
       title: 'New Transaction Detected',
@@ -91,8 +89,8 @@ class SmsService {
     );
   }
 
-  String _generateMsgId(SmsMessage message) {
-    final input = '${message.body}_${message.address}_${message.date}';
+  String _generateMsgId({required String body, String? address, int? date}) {
+    final input = '${body}_${address}_$date';
     return sha256.convert(utf8.encode(input)).toString();
   }
 }
