@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/models/expense_model.dart';
 import '../../data/repositories/expense_repository.dart';
+import '../../data/local/storage_service.dart';
 
 class ExpenseState {
   final List<ExpenseModel> allExpenses;
@@ -37,6 +38,11 @@ class ExpenseCubit extends Cubit<ExpenseState> {
     // Small delay to allow initial build to complete
     Future.delayed(const Duration(milliseconds: 100), () {
       _initialLoad();
+    });
+
+    // Auto-refresh when background services (like SMS) add expenses
+    StorageService.expenseBox.watch().listen((_) {
+      loadExpenses();
     });
   }
 
