@@ -46,6 +46,20 @@ class NotificationSettingsGroup extends StatelessWidget {
             },
           ),
         ],
+        const Divider(height: 1, indent: 56),
+        SettingsTile(
+          icon: Icons.sms_outlined,
+          title: 'SMS Transaction Detection',
+          subtitle: 'Automatically detect expenses from SMS',
+          iconColor: Colors.blue,
+          trailing: CupertinoSwitch(
+            activeColor: Theme.of(context).colorScheme.primary,
+            value: settingsState.smsDetectionEnabled,
+            onChanged: (val) {
+              context.read<SettingsCubit>().toggleSmsDetection(val);
+            },
+          ),
+        ),
       ],
     );
   }
