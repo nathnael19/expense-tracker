@@ -94,6 +94,28 @@ class NotificationService {
     );
   }
 
+  static Future<void> showNotification({
+    required int id,
+    required String title,
+    required String body,
+  }) async {
+    await _notificationsPlugin.show(
+      id,
+      title,
+      body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'sms_alerts',
+          'SMS Alerts',
+          channelDescription: 'Transaction alerts from SMS',
+          importance: Importance.max,
+          priority: Priority.max,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+    );
+  }
+
   static Future<void> cancelAll() async {
     await _notificationsPlugin.cancelAll();
   }
