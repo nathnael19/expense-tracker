@@ -18,6 +18,7 @@ class SmsReceiver : BroadcastReceiver() {
                     putExtra("body", body)
                     putExtra("address", address)
                     putExtra("date", timestamp)
+                    setPackage(context?.packageName)
                 }
                 context?.sendBroadcast(localIntent)
             }
