@@ -37,14 +37,24 @@ class TransactionItemCard extends StatelessWidget {
             ScaffoldMessenger.of(context).clearSnackBars();
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text('Expense deleted'),
-                duration: const Duration(seconds: 2),
-                action: SnackBarAction(
-                  label: 'Undo',
-                  onPressed: () {
-                    context.read<ExpenseCubit>().addExpense(expense);
-                  },
+                content: Row(
+                  children: [
+                    const Expanded(child: Text('Expense deleted')),
+                    TextButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        context.read<ExpenseCubit>().addExpense(expense);
+                      },
+                      child: Text(
+                        'Undo',
+                        style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),
+                      ),
+                    ),
+                  ],
                 ),
+                duration: const Duration(seconds: 3),
+                behavior: SnackBarBehavior.floating,
+                padding: const EdgeInsets.only(left: 16, right: 8, top: 4, bottom: 4),
               ),
             );
           },
