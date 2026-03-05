@@ -6,8 +6,6 @@ import 'package:intl/intl.dart';
 import '../../blocs/stats_cubit.dart';
 import '../common/streak_indicator.dart';
 import '../../screens/debt_screen.dart';
-import '../../screens/shopping_lists_screen.dart';
-import '../../screens/monthly_report_screen.dart';
 import '../../screens/settings_screen.dart';
 
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -58,34 +56,21 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
             color: isDarkMode ? Colors.white : Colors.black87,
           ),
           onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const DebtScreen()));
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (ctx) => const DebtScreen()));
           },
         ),
-        IconButton(
-          icon: Icon(
-            Icons.shopping_cart_outlined,
-            color: isDarkMode ? Colors.white : Colors.black87,
-          ),
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const ShoppingListsScreen()));
-          },
-        ),
-        IconButton(
-          icon: Icon(
-            Icons.bar_chart,
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const MonthlyReportScreen()));
-          },
-        ),
+
         IconButton(
           icon: Icon(
             Icons.settings,
             color: isDarkMode ? Colors.white : Colors.black,
           ),
           onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const SettingsScreen()));
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (ctx) => const SettingsScreen()));
           },
         ),
       ],
