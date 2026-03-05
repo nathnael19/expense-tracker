@@ -1,4 +1,6 @@
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+
 import 'package:uuid/uuid.dart';
 import '../local/storage_service.dart';
 import '../models/expense_model.dart';
@@ -45,18 +47,31 @@ class SmsService {
   }
 
   Future<void> _onSmsReceived({required String body, String? address, int? date}) async {
+    debugPrint('SmsService: Received SMS from $address: $body');
+
     // 1. Check if SMS detection is enabled in settings
     final isEnabled = StorageService.settingsBox.get('smsDetectionEnabled', defaultValue: false);
-    if (!isEnabled) return;
+    if (!isEnabled) {
+      debugPrint('SmsService: Ignored (Detection Disabled)');
+      return;
+    }
 
     // 2. Duplicate Protection (Hash of message body + address + timestamp)
     final msgId = _generateMsgId(body: body, address: address, date: date);
-    if (StorageService.processedSmsBox.containsKey(msgId)) return;
+    if (StorageService.processedSmsBox.containsKey(msgId)) {
+      debugPrint('SmsService: Ignored (Duplicate)');
+      return;
+    }
 
     // 3. Parse Message
     final timestamp = DateTime.fromMillisecondsSinceEpoch(date ?? DateTime.now().millisecondsSinceEpoch);
     final parsed = SmsParser.parse(body, timestamp);
-    if (parsed == null) return;
+    if (parsed == null) {
+      debugPrint('SmsService: Ignored (Not a valid transaction pattern)');
+      return;
+    }
+
+    debugPrint('SmsService: Parsed ${parsed.amount} for ${parsed.description}');
 
     // 4. Get "Uncategorized" Category
     final categories = _categoryRepository.getAllCategories();
