@@ -2,27 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/local/storage_service.dart';
 import '../../data/services/notification_service.dart';
+import '../../data/services/sms_service.dart';
 
 class SettingsState {
   final bool isAppLockEnabled;
   final bool reminderEnabled;
   final TimeOfDay reminderTime;
+  final bool smsDetectionEnabled;
 
   SettingsState({
     this.isAppLockEnabled = false,
     this.reminderEnabled = false,
     this.reminderTime = const TimeOfDay(hour: 20, minute: 0),
+    this.smsDetectionEnabled = false,
   });
 
   SettingsState copyWith({
     bool? isAppLockEnabled,
     bool? reminderEnabled,
     TimeOfDay? reminderTime,
+    bool? smsDetectionEnabled,
   }) {
     return SettingsState(
       isAppLockEnabled: isAppLockEnabled ?? this.isAppLockEnabled,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       reminderTime: reminderTime ?? this.reminderTime,
+      smsDetectionEnabled: smsDetectionEnabled ?? this.smsDetectionEnabled,
     );
   }
 }
@@ -49,14 +54,23 @@ class SettingsCubit extends Cubit<SettingsState> {
       'reminderMinute',
       defaultValue: 0,
     );
+    final smsDetectionEnabled = StorageService.settingsBox.get(
+      'smsDetectionEnabled',
+      defaultValue: false,
+    );
 
     emit(
       state.copyWith(
         isAppLockEnabled: isLocked,
         reminderEnabled: reminderEnabled,
         reminderTime: TimeOfDay(hour: reminderHour, minute: reminderMinute),
+        smsDetectionEnabled: smsDetectionEnabled,
       ),
     );
+
+    if (smsDetectionEnabled) {
+      SmsService().init();
+    }
   }
 
   Future<void> toggleAppLock(bool value) async {
@@ -90,6 +104,14 @@ class SettingsCubit extends Cubit<SettingsState> {
       );
     } else {
       NotificationService.cancelAll();
+    }
+  }
+
+  Future<void> toggleSmsDetection(bool value) async {
+    await StorageService.settingsBox.put('smsDetectionEnabled', value);
+    emit(state.copyWith(smsDetectionEnabled: value));
+    if (value) {
+      SmsService().init();
     }
   }
 }
