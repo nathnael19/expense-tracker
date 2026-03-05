@@ -108,10 +108,16 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   Future<void> toggleSmsDetection(bool value) async {
-    await StorageService.settingsBox.put('smsDetectionEnabled', value);
-    emit(state.copyWith(smsDetectionEnabled: value));
     if (value) {
+      final granted = await SmsService().requestPermissions();
+      if (!granted) {
+        emit(state.copyWith(smsDetectionEnabled: false));
+        return;
+      }
       SmsService().init();
     }
+    
+    await StorageService.settingsBox.put('smsDetectionEnabled', value);
+    emit(state.copyWith(smsDetectionEnabled: value));
   }
 }
