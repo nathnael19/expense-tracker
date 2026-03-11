@@ -1,42 +1,219 @@
 import 'package:expense_tracker_offline/data/models/debt_model.dart';
+import 'package:expense_tracker_offline/data/models/person_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 import '../blocs/debt_cubit.dart';
 import 'add_debt_screen.dart';
+import 'person_detail_screen.dart';
 
-class DebtScreen extends StatelessWidget {
+class DebtScreen extends StatefulWidget {
   const DebtScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Debt Manager'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Active'),
-              Tab(text: 'History'),
-            ],
+  State<DebtScreen> createState() => _DebtScreenState();
+}
+
+class _DebtScreenState extends State<DebtScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _showAddPersonDialog() {
+    final nameController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add Person'),
+        content: TextField(
+          controller: nameController,
+          decoration: const InputDecoration(
+            labelText: 'Name',
+            hintText: 'Enter person name',
           ),
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
         ),
-        body: const TabBarView(
-          children: [_DebtList(isActive: true), _DebtList(isActive: false)],
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AddDebtScreen()),
-            );
-          },
-          label: const Text('Add Record'),
-          icon: const Icon(Icons.add),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (nameController.text.trim().isNotEmpty) {
+                final newPerson = PersonModel(
+                  id: const Uuid().v4(),
+                  name: nameController.text.trim(),
+                  createdAt: DateTime.now(),
+                );
+                context.read<DebtCubit>().addPerson(newPerson);
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Debt Manager'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'People'),
+            Tab(text: 'Active'),
+            Tab(text: 'History'),
+          ],
         ),
       ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          const _PersonList(),
+          const _DebtList(isActive: true),
+          const _DebtList(isActive: false),
+        ],
+      ),
+      floatingActionButton: ListenableBuilder(
+        listenable: _tabController,
+        builder: (context, child) {
+          final isPeopleTab = _tabController.index == 0;
+          return FloatingActionButton.extended(
+            onPressed: isPeopleTab
+                ? _showAddPersonDialog
+                : () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddDebtScreen(),
+                      ),
+                    );
+                  },
+            label: Text(isPeopleTab ? 'Add Person' : 'Add Record'),
+            icon: const Icon(Icons.add),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _PersonList extends StatelessWidget {
+  const _PersonList();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<DebtCubit, DebtState>(
+      builder: (context, state) {
+        if (state.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final persons = state.persons;
+
+        if (persons.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.people_outline, size: 64, color: Colors.grey[300]),
+                const Gap(16),
+                const Text(
+                  'No people added yet',
+                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                ),
+                const Gap(8),
+                TextButton(
+                  onPressed: () {
+                    // This is a bit hacky but it works for now
+                    (context.findAncestorStateOfType<_DebtScreenState>())?._showAddPersonDialog();
+                  },
+                  child: const Text('Add your first person'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: persons.length,
+          itemBuilder: (context, index) {
+            final person = persons[index];
+            final balance = state.getPersonBalance(person.id);
+            final color = balance >= 0 ? Colors.green : Colors.redAccent;
+
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: ListTile(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PersonDetailScreen(person: person),
+                    ),
+                  );
+                },
+                contentPadding: const EdgeInsets.all(16),
+                leading: CircleAvatar(
+                  backgroundColor: color.withOpacity(0.1),
+                  child: Text(
+                    person.name[0].toUpperCase(),
+                    style: TextStyle(color: color, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                title: Text(
+                  person.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'ETB ${balance.abs().toStringAsFixed(0)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: balance == 0 ? Colors.grey : color,
+                      ),
+                    ),
+                    Text(
+                      balance >= 0 ? 'Receivable' : 'Payable',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: balance == 0 ? Colors.grey : color,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
