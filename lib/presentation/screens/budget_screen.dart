@@ -48,39 +48,83 @@ class _BudgetScreenState extends State<BudgetScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Set Monthly Budget')),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
+      appBar: AppBar(
+        title: const Text('Monthly Budget', style: TextStyle(fontWeight: FontWeight.w700)),
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'How much do you want to spend this month?',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            const Gap(24),
-            TextField(
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              autofocus: true,
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              decoration: const InputDecoration(
-                prefixText: 'ETB ',
-                border: InputBorder.none,
-                hintText: '0',
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.1)),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.account_balance_wallet, size: 32, color: Theme.of(context).colorScheme.primary),
+                  ),
+                  const Gap(20),
+                  const Text(
+                    'Set Your Monthly Limit',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const Gap(8),
+                  const Text(
+                    'Track your spending and stay within your budget each month.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                  ),
+                  const Gap(32),
+                  TextField(
+                    controller: _amountController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    autofocus: true,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.w800,
+                      color: Theme.of(context).colorScheme.primary,
+                      letterSpacing: -1,
+                    ),
+                    decoration: InputDecoration(
+                      prefixText: 'ETB ',
+                      prefixStyle: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                      ),
+                      border: InputBorder.none,
+                      hintText: '0.00',
+                      hintStyle: TextStyle(color: Theme.of(context).colorScheme.primary.withOpacity(0.2)),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const Spacer(),
+            const Gap(40),
             ElevatedButton(
               onPressed: _saveBudget,
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                elevation: 0,
               ),
               child: const Text(
-                'Save Budget',
+                'Update Budget',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
