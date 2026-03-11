@@ -7,18 +7,18 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:28701956439:android:379e2412ac5beb2eb8c612",
+        "mobilesdk_app_id": "1:28701956439:android:ba4b55a830a3f916b8c612",
         "android_client_info": {
-          "package_name": "com.nathnael.expense_tracker_offline"
+          "package_name": "com.nathnael19.expense_tracker_offline"
         }
       },
       "oauth_client": [
         {
-          "client_id": "28701956439-g3l8jq3109gsb7bhlcbnddh73st34jjf.apps.googleusercontent.com",
+          "client_id": "28701956439-pt6vu80i90khn61blukkj3c75tldf1eq.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.nathnael.expense_tracker_offline",
-            "certificate_hash": "0d5e0f0e171a74a756e66c20838c97986592be00"
+            "package_name": "com.nathnael19.expense_tracker_offline",
+            "certificate_hash": "4781355891ca8b6dd9db7c82dc408dce4278aa14"
           }
         },
         {
