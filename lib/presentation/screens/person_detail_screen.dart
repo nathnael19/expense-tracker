@@ -7,6 +7,8 @@ import '../../data/models/person_model.dart';
 import '../blocs/debt_cubit.dart';
 import 'add_debt_screen.dart';
 
+import 'person_debt_history_screen.dart';
+
 class PersonDetailScreen extends StatelessWidget {
   final PersonModel person;
 
@@ -16,7 +18,11 @@ class PersonDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<DebtCubit, DebtState>(
       builder: (context, state) {
-        final personDebts = state.debts.where((d) => d.personId == person.id || (d.personId == null && d.personName == person.name)).toList()
+        final personDebts = state.debts
+            .where((d) =>
+                (d.personId == person.id || (d.personId == null && d.personName == person.name)) &&
+                !d.isPaid)
+            .toList()
           ..sort((a, b) => b.date.compareTo(a.date));
 
         final balance = state.getPersonBalance(person.id);
@@ -25,6 +31,18 @@ class PersonDetailScreen extends StatelessWidget {
           appBar: AppBar(
             title: Text(person.name),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.history),
+                tooltip: 'History',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PersonDebtHistoryScreen(person: person),
+                    ),
+                  );
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.delete_outline),
                 onPressed: () => _showDeletePersonDialog(context),
