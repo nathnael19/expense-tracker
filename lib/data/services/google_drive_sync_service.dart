@@ -11,6 +11,7 @@ import '../models/debt_model.dart';
 import '../models/budget_model.dart';
 import '../models/shopping_list_model.dart';
 import '../models/shopping_item_model.dart';
+import '../models/person_model.dart';
 
 class GoogleDriveSyncService {
   static final GoogleDriveSyncService _instance =
@@ -213,10 +214,80 @@ class GoogleDriveSyncService {
     return null;
   }
 
+
+  /// Import all data to local storage (APPEND logic)
+  Future<void> _importAllData(Map<String, dynamic> data) async {
+    // Import categories (Dependencies)
+    final categories = data['categories'] as List<dynamic>? ?? [];
+    for (var categoryData in categories) {
+      final category = _categoryFromJson(categoryData as Map<String, dynamic>);
+      // Check if already exists to avoid overwriting modified local data if preferred, 
+      // but usually we want to ensure categories exist.
+      if (!StorageService.categoryBox.containsKey(category.id)) {
+        await StorageService.categoryBox.put(category.id, category);
+      }
+    }
+
+    // Import persons (Dependencies for debts)
+    final persons = data['persons'] as List<dynamic>? ?? [];
+    for (var personData in persons) {
+      final person = _personFromJson(personData as Map<String, dynamic>);
+      if (!StorageService.personBox.containsKey(person.id)) {
+        await StorageService.personBox.put(person.id, person);
+      }
+    }
+
+    // Import expenses
+    final expenses = data['expenses'] as List<dynamic>? ?? [];
+    for (var expenseData in expenses) {
+      final expense = _expenseFromJson(expenseData as Map<String, dynamic>);
+      if (!StorageService.expenseBox.containsKey(expense.id)) {
+        await StorageService.expenseBox.put(expense.id, expense);
+      }
+    }
+
+    // Import shortcuts
+    final shortcuts = data['shortcuts'] as List<dynamic>? ?? [];
+    for (var shortcutData in shortcuts) {
+      final shortcut = _shortcutFromJson(shortcutData as Map<String, dynamic>);
+      if (!StorageService.shortcutBox.containsKey(shortcut.id)) {
+        await StorageService.shortcutBox.put(shortcut.id, shortcut);
+      }
+    }
+
+    // Import debts
+    final debts = data['debts'] as List<dynamic>? ?? [];
+    for (var debtData in debts) {
+      final debt = _debtFromJson(debtData as Map<String, dynamic>);
+      if (!StorageService.debtBox.containsKey(debt.id)) {
+        await StorageService.debtBox.put(debt.id, debt);
+      }
+    }
+
+    // Import budgets
+    final budgets = data['budgets'] as List<dynamic>? ?? [];
+    for (var budgetData in budgets) {
+      final budget = _budgetFromJson(budgetData as Map<String, dynamic>);
+      // Budgets are usually unique by id, but they reference categoryId, month, year.
+      if (!StorageService.budgetBox.containsKey(budget.id)) {
+        await StorageService.budgetBox.put(budget.id, budget);
+      }
+    }
+
+    // Import shopping lists
+    final shoppingLists = data['shopping_lists'] as List<dynamic>? ?? [];
+    for (var listData in shoppingLists) {
+      final list = _shoppingListFromJson(listData as Map<String, dynamic>);
+      if (!StorageService.shoppingListBox.containsKey(list.id)) {
+        await StorageService.shoppingListBox.put(list.id, list);
+      }
+    }
+  }
+
   /// Export all data from local storage
   Future<Map<String, dynamic>> _exportAllData() async {
     return {
-      'version': '1.0.0',
+      'version': '1.1.0',
       'timestamp': DateTime.now().toIso8601String(),
       'expenses': StorageService.expenseBox.values
           .map(
@@ -257,6 +328,8 @@ class GoogleDriveSyncService {
               'dueDate': d.dueDate?.toIso8601String(),
               'type': d.type.index,
               'isPaid': d.isPaid,
+              'personId': d.personId,
+              'reason': d.reason,
             },
           )
           .toList(),
@@ -290,60 +363,16 @@ class GoogleDriveSyncService {
             },
           )
           .toList(),
+      'persons': StorageService.personBox.values
+          .map(
+            (p) => {
+              'id': p.id,
+              'name': p.name,
+              'createdAt': p.createdAt.toIso8601String(),
+            },
+          )
+          .toList(),
     };
-  }
-
-  /// Import all data to local storage
-  Future<void> _importAllData(Map<String, dynamic> data) async {
-    // Clear existing data
-    await StorageService.expenseBox.clear();
-    await StorageService.categoryBox.clear();
-    await StorageService.shortcutBox.clear();
-    await StorageService.debtBox.clear();
-    await StorageService.budgetBox.clear();
-    await StorageService.shoppingListBox.clear();
-
-    // Import expenses
-    final expenses = data['expenses'] as List<dynamic>? ?? [];
-    for (var expenseData in expenses) {
-      final expense = _expenseFromJson(expenseData as Map<String, dynamic>);
-      await StorageService.expenseBox.put(expense.id, expense);
-    }
-
-    // Import categories
-    final categories = data['categories'] as List<dynamic>? ?? [];
-    for (var categoryData in categories) {
-      final category = _categoryFromJson(categoryData as Map<String, dynamic>);
-      await StorageService.categoryBox.put(category.id, category);
-    }
-
-    // Import shortcuts
-    final shortcuts = data['shortcuts'] as List<dynamic>? ?? [];
-    for (var shortcutData in shortcuts) {
-      final shortcut = _shortcutFromJson(shortcutData as Map<String, dynamic>);
-      await StorageService.shortcutBox.put(shortcut.id, shortcut);
-    }
-
-    // Import debts
-    final debts = data['debts'] as List<dynamic>? ?? [];
-    for (var debtData in debts) {
-      final debt = _debtFromJson(debtData as Map<String, dynamic>);
-      await StorageService.debtBox.put(debt.id, debt);
-    }
-
-    // Import budgets
-    final budgets = data['budgets'] as List<dynamic>? ?? [];
-    for (var budgetData in budgets) {
-      final budget = _budgetFromJson(budgetData as Map<String, dynamic>);
-      await StorageService.budgetBox.put(budget.id, budget);
-    }
-
-    // Import shopping lists
-    final shoppingLists = data['shopping_lists'] as List<dynamic>? ?? [];
-    for (var listData in shoppingLists) {
-      final list = _shoppingListFromJson(listData as Map<String, dynamic>);
-      await StorageService.shoppingListBox.put(list.id, list);
-    }
   }
 
   /// Set last sync timestamp
@@ -399,6 +428,8 @@ class GoogleDriveSyncService {
       isPaid: json['isPaid'] as bool? ?? false,
       note: json['note'] as String? ?? '',
       type: DebtType.values[json['type'] as int],
+      personId: json['personId'] as String?,
+      reason: json['reason'] as String? ?? '',
     );
   }
 
@@ -431,6 +462,14 @@ class GoogleDriveSyncService {
       estimatedCost: json['estimatedCost'] != null
           ? (json['estimatedCost'] as num).toDouble()
           : null,
+    );
+  }
+
+  PersonModel _personFromJson(Map<String, dynamic> json) {
+    return PersonModel(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
 }
