@@ -215,141 +215,93 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       appBar: AppBar(
         title: Text(
           widget.expense == null
-              ? (widget.forceRecurringMode ? 'New Recurring' : 'Add Expense')
-              : 'Edit Expense',
+              ? (widget.forceRecurringMode ? 'New Recurring' : 'New Transaction')
+              : 'Edit Transaction',
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
+        centerTitle: true,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.close,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
-          ),
+          icon: const Icon(Icons.close_rounded),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 0. Shortcuts Section (Only show when adding new)
-              if (widget.expense == null)
-                SizedBox(
-                  height: 40,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      ActionChip(
-                        avatar: const Icon(Icons.flash_on, size: 16),
-                        label: const Text('Add Shortcut'),
-                        onPressed: _showAddShortcutDialog,
-                      ),
-                      const Gap(8),
-                      ...shortcuts.map((shortcut) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: InputChip(
-                            label: Text(shortcut.title),
-                            onPressed: () => _applyShortcut(shortcut),
-                            onDeleted: () {
-                              context.read<ShortcutCubit>().deleteShortcut(
-                                shortcut.id,
-                              );
-                            },
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
+              // Type Selector
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-              if (widget.expense == null) const Gap(16),
-              SegmentedButton<TransactionType>(
-                segments: const [
-                  ButtonSegment(
-                    value: TransactionType.expense,
-                    label: Text('Expense'),
-                    icon: Icon(Icons.arrow_downward),
-                  ),
-                  ButtonSegment(
-                    value: TransactionType.income,
-                    label: Text('Income'),
-                    icon: Icon(Icons.arrow_upward),
-                  ),
-                ],
-                selected: {_type},
-                onSelectionChanged: (Set<TransactionType> newSelection) {
-                  setState(() {
-                    _type = newSelection.first;
-                  });
-                },
-                style: SegmentedButton.styleFrom(
-                  selectedBackgroundColor: _type == TransactionType.income
-                      ? Colors.greenAccent[400]?.withOpacity(0.2)
-                      : Theme.of(context).colorScheme.primaryContainer,
-                  selectedForegroundColor: _type == TransactionType.income
-                      ? Colors.green[800]
-                      : Theme.of(context).colorScheme.onPrimaryContainer,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _TypeButton(
+                        label: 'Expense',
+                        isSelected: _type == TransactionType.expense,
+                        color: Colors.redAccent,
+                        onTap: () => setState(() => _type = TransactionType.expense),
+                      ),
+                    ),
+                    Expanded(
+                      child: _TypeButton(
+                        label: 'Income',
+                        isSelected: _type == TransactionType.income,
+                        color: Colors.greenAccent[700]!,
+                        onTap: () => setState(() => _type = TransactionType.income),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const Gap(24),
+              const Gap(32),
+
+              // Recurring Options (if applicable)
               if (widget.forceRecurringMode ||
                   (widget.expense != null &&
                       widget.expense?.recurrence != RecurrenceType.none)) ...[
                 const Text(
-                  'Repeat Transaction',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
-                  ),
+                  'RECURRENCE',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2),
                 ),
-                const Gap(8),
-                SegmentedButton<RecurrenceType>(
-                  segments: const [
-                    ButtonSegment(
-                      value: RecurrenceType.weekly,
-                      label: Text('Weekly'),
-                      icon: Icon(Icons.repeat),
+                const Gap(12),
+                Row(
+                  children: [
+                    _RecurrenceChip(
+                      label: 'Weekly',
+                      isSelected: _recurrence == RecurrenceType.weekly,
+                      onTap: () => setState(() => _recurrence = RecurrenceType.weekly),
                     ),
-                    ButtonSegment(
-                      value: RecurrenceType.monthly,
-                      label: Text('Monthly'),
-                      icon: Icon(Icons.calendar_month),
+                    const Gap(12),
+                    _RecurrenceChip(
+                      label: 'Monthly',
+                      isSelected: _recurrence == RecurrenceType.monthly,
+                      onTap: () => setState(() => _recurrence = RecurrenceType.monthly),
                     ),
                   ],
-                  selected: {_recurrence},
-                  onSelectionChanged: (Set<RecurrenceType> newSelection) {
-                    setState(() {
-                      _recurrence = newSelection.first;
-                    });
-                  },
                 ),
-                const Gap(16),
+                const Gap(32),
               ],
 
-              const Gap(16),
-
+              // Amount Input
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                  ),
+                  color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(32),
+                  border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.1)),
                 ),
                 child: Column(
                   children: [
-                    Text(
-                      'Amount',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const Gap(8),
+                    const Text('AMOUNT', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2)),
+                    const Gap(12),
                     TextField(
                       controller: _amountController,
                       autofocus: widget.expense == null,
@@ -368,12 +320,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         prefixStyle: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.35),
                         ),
                         border: InputBorder.none,
-                        hintText: '0',
+                        hintText: '0.00',
                         hintStyle: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.3),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.2),
                         ),
                       ),
                     ),
@@ -381,124 +333,68 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 ),
               ),
 
-              const Gap(24),
+              const Gap(32),
 
-              // 2. Category Selection
-              Text(
-                'Category',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const Gap(8),
+              // Category Selection
+              const Text('CATEGORY', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2)),
+              const Gap(12),
               SizedBox(
-                height: 50,
+                height: 54,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount:
-                      categories.length +
-                      1, // +1 for "Edit/Manage" trigger if we wanted, but let's stick to list
-                  separatorBuilder: (ctx, i) => const Gap(8),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: categories.length + 1,
+                  separatorBuilder: (ctx, i) => const Gap(12),
                   itemBuilder: (ctx, index) {
                     if (index == categories.length) {
-                      // Placeholder for managing categories later
                       return _CategoryChip(
                         label: 'Manage',
-                        icon: Icons.settings,
+                        icon: Icons.settings_outlined,
                         isSelected: false,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (ctx) =>
-                                  const CategoryManagementScreen(),
-                            ),
-                          );
-                        },
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (ctx) => const CategoryManagementScreen()),
+                        ),
                         isSpecial: true,
                       );
                     }
 
                     final cat = categories[index];
-                    final isSelected = cat.id == _selectedCategoryId;
                     return _CategoryChip(
                       label: cat.name,
                       iconCode: cat.iconCode,
-                      isSelected: isSelected,
-                      onTap: () {
-                        setState(() {
-                          _selectedCategoryId = cat.id;
-                        });
-                      },
+                      isSelected: cat.id == _selectedCategoryId,
+                      onTap: () => setState(() => _selectedCategoryId = cat.id),
                     );
                   },
                 ),
               ),
 
-              const Gap(24),
+              const Gap(32),
 
-              // 3. Date & Note
+              // Note & Date
               Row(
                 children: [
                   Expanded(
-                    flex: 3,
-                    child: InkWell(
+                    child: _InputContainer(
                       onTap: _presentDatePicker,
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.calendar_today,
-                              size: 16,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                            const Gap(8),
-                            Flexible(
-                              child: Text(
-                                DateFormat.yMMMd().format(_selectedDate),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      icon: Icons.calendar_today_rounded,
+                      label: DateFormat('MMM d, y').format(_selectedDate),
                     ),
                   ),
-                  const Gap(12),
+                  const Gap(16),
                   Expanded(
-                    flex: 4,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(8),
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: TextField(
                         controller: _noteController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           hintText: 'Note...',
                           border: InputBorder.none,
-                          icon: Icon(
-                            Icons.edit,
-                            size: 16,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
+                          icon: Icon(Icons.edit_note_rounded, size: 20, color: Colors.grey),
                         ),
                       ),
                     ),
@@ -506,32 +402,173 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 ],
               ),
 
-              const Gap(40),
+              const Gap(32),
 
-              // 4. Save Button
+              // Shortcuts
+              if (widget.expense == null && shortcuts.isNotEmpty) ...[
+                const Text('QUICK SHORTCUTS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2)),
+                const Gap(12),
+                SizedBox(
+                  height: 44,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    children: [
+                      ...shortcuts.map((shortcut) => Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: ActionChip(
+                          label: Text(shortcut.title),
+                          avatar: const Icon(Icons.bolt, size: 16),
+                          onPressed: () => _applyShortcut(shortcut),
+                        ),
+                      )),
+                      ActionChip(
+                        label: const Text('New'),
+                        avatar: const Icon(Icons.add_rounded, size: 16),
+                        onPressed: _showAddShortcutDialog,
+                      ),
+                    ],
+                  ),
+                ),
+                const Gap(40),
+              ] else if (widget.expense == null) ...[
+                OutlinedButton.icon(
+                  onPressed: _showAddShortcutDialog,
+                  icon: const Icon(Icons.flash_on_rounded, size: 18),
+                  label: const Text('Add Quick Shortcut'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                ),
+                const Gap(40),
+              ],
+
+              // Save Button
               ElevatedButton(
                 onPressed: _saveExpense,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  elevation: 0,
                 ),
                 child: Text(
-                  widget.expense == null
-                      ? 'Save ${_type == TransactionType.income ? 'Income' : 'Expense'}'
-                      : 'Update ${_type == TransactionType.income ? 'Income' : 'Expense'}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  widget.expense == null ? 'Save Transaction' : 'Update Transaction',
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
               ),
-              const Gap(32),
+              const Gap(40),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TypeButton extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _TypeButton({
+    required this.label,
+    required this.isSelected,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? color : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: isSelected
+              ? [BoxShadow(color: color.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))]
+              : null,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RecurrenceChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _RecurrenceChip({required this.label, required this.isSelected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey[600],
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InputContainer extends StatelessWidget {
+  final VoidCallback onTap;
+  final IconData icon;
+  final String label;
+
+  const _InputContainer({required this.onTap, required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: Colors.grey),
+            const Gap(12),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -557,38 +594,34 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected
-        ? Theme.of(context).colorScheme.primary
-        : (isSpecial
-              ? Theme.of(context).colorScheme.surfaceContainerHighest
-              : Theme.of(
-                  context,
-                ).colorScheme.surfaceContainerHighest.withOpacity(0.5));
-    final textColor = isSelected
-        ? Theme.of(context).colorScheme.onPrimary
-        : Theme.of(context).colorScheme.onSurface;
-
-    return GestureDetector(
+    final theme = Theme.of(context);
+    return InkWell(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(20),
-          border: isSelected ? null : Border.all(color: Colors.transparent),
+          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surfaceContainerHighest.withOpacity(isSelected ? 1 : 0.4),
+          borderRadius: BorderRadius.circular(16),
+          border: isSelected ? null : Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
         ),
         alignment: Alignment.center,
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon ?? IconData(iconCode!, fontFamily: 'MaterialIcons'),
-              size: 18,
-              color: textColor,
+              size: 20,
+              color: isSelected ? Colors.white : Colors.grey[600],
             ),
-            const Gap(6),
+            const Gap(8),
             Text(
               label,
-              style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.grey[700],
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
