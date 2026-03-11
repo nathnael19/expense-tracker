@@ -16,72 +16,77 @@ class PersonDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DebtCubit, DebtState>(
-      builder: (context, state) {
-        final personDebts = state.debts
-            .where((d) =>
-                (d.personId == person.id || (d.personId == null && d.personName == person.name)) &&
-                !d.isPaid)
-            .toList()
-          ..sort((a, b) => b.date.compareTo(a.date));
-
-        final balance = state.getPersonBalance(person.id);
-
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(person.name),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.history),
-                tooltip: 'History',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PersonDebtHistoryScreen(person: person),
-                    ),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () => _showDeletePersonDialog(context),
-              ),
-            ],
-          ),
-          body: Column(
-            children: [
-              _buildSummaryCard(context, balance),
-              Expanded(
-                child: personDebts.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: personDebts.length,
-                        itemBuilder: (context, index) {
-                          return _DebtItemTile(debt: personDebts[index]);
-                        },
-                      ),
-              ),
-            ],
-          ),
-          floatingActionButton: FloatingActionButton.extended(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(person.name),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'History',
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddDebtScreen(
-                    debt: null,
-                    initialPerson: person,
-                  ),
+                  builder: (context) => PersonDebtHistoryScreen(person: person),
                 ),
               );
             },
-            label: const Text('Add Record'),
-            icon: const Icon(Icons.add),
           ),
-        );
-      },
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            onPressed: () => _showDeletePersonDialog(context),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Build summary card only when balance changes
+          Builder(builder: (context) {
+            final balance = context.select<DebtCubit, double>(
+              (cubit) => cubit.state.getPersonBalance(person.id),
+            );
+            return _buildSummaryCard(context, balance);
+          }),
+          Expanded(
+            child: BlocSelector<DebtCubit, DebtState, List<DebtModel>>(
+              selector: (state) => state.debts
+                  .where((d) =>
+                      (d.personId == person.id ||
+                          (d.personId == null && d.personName == person.name)) &&
+                      !d.isPaid)
+                  .toList()
+                ..sort((a, b) => b.date.compareTo(a.date)),
+              builder: (context, activeDebts) {
+                if (activeDebts.isEmpty) {
+                  return _buildEmptyState();
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: activeDebts.length,
+                  itemBuilder: (context, index) {
+                    return _DebtItemTile(debt: activeDebts[index]);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddDebtScreen(
+                debt: null,
+                initialPerson: person,
+              ),
+            ),
+          );
+        },
+        label: const Text('Add Record'),
+        icon: const Icon(Icons.add),
+      ),
     );
   }
 
