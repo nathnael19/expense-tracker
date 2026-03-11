@@ -10,20 +10,23 @@ class DebtState {
   final bool isLoading;
   final String? error;
 
+  // Memoized lists to avoid recalculating every time a getter is accessed
+  final List<DebtModel> activeDebts;
+  final List<DebtModel> historyDebts;
+
   DebtState({
     this.debts = const [],
     this.persons = const [],
     this.isLoading = false,
     this.error,
-  });
-
-  List<DebtModel> get activeDebts =>
-      debts.where((d) => !d.isPaid).toList()
-        ..sort((a, b) => b.date.compareTo(a.date));
-
-  List<DebtModel> get historyDebts =>
-      debts.where((d) => d.isPaid).toList()
-        ..sort((a, b) => b.date.compareTo(a.date));
+  })  : activeDebts = List.unmodifiable(
+          debts.where((d) => !(d.isPaid)).toList()
+            ..sort((a, b) => b.date.compareTo(a.date)),
+        ),
+        historyDebts = List.unmodifiable(
+          debts.where((d) => d.isPaid).toList()
+            ..sort((a, b) => b.date.compareTo(a.date)),
+        );
 
   double get totalLent => activeDebts
       .where((d) => d.type == DebtType.lent)
@@ -32,8 +35,9 @@ class DebtState {
   double getPersonBalance(String personId) {
     final person = persons.where((p) => p.id == personId).firstOrNull;
     if (person == null) return 0.0;
-    
-    final personDebts = debts.where((d) => d.personId == personId || (d.personId == null && d.personName == person.name));
+
+    final personDebts = debts.where((d) =>
+        d.personId == personId || (d.personId == null && d.personName == person.name));
     double balance = 0;
     for (var d in personDebts) {
       if (d.isPaid) continue;
