@@ -21,6 +21,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   final _nameController = TextEditingController();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
+  final _reasonController = TextEditingController();
   late DateTime _selectedDate;
   DateTime? _dueDate;
   late DebtType _selectedType;
@@ -33,6 +34,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       _nameController.text = widget.debt!.personName;
       _amountController.text = widget.debt!.amount.toString();
       _noteController.text = widget.debt!.note;
+      _reasonController.text = widget.debt!.reason ?? '';
       _selectedDate = widget.debt!.date;
       _dueDate = widget.debt!.dueDate;
       _selectedType = widget.debt!.type;
@@ -52,6 +54,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     _nameController.dispose();
     _amountController.dispose();
     _noteController.dispose();
+    _reasonController.dispose();
     super.dispose();
   }
 
@@ -86,6 +89,19 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   void _saveDebt() {
     if (_formKey.currentState!.validate()) {
       final amount = double.tryParse(_amountController.text) ?? 0.0;
+      
+      // If we don't have a personId but the name matches exactly one of our persons, link it
+      String? personId = _selectedPersonId;
+      if (personId == null) {
+        final state = context.read<DebtCubit>().state;
+        final matchedPerson = state.persons.where(
+          (p) => p.name.toLowerCase() == _nameController.text.trim().toLowerCase()
+        ).firstOrNull;
+        if (matchedPerson != null) {
+          personId = matchedPerson.id;
+        }
+      }
+
       final newDebt = DebtModel(
         id: widget.debt?.id ?? const Uuid().v4(),
         personName: _nameController.text.trim(),
@@ -93,9 +109,10 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         date: _selectedDate,
         dueDate: _dueDate,
         note: _noteController.text.trim(),
+        reason: _reasonController.text.trim(),
         type: _selectedType,
         isPaid: widget.debt?.isPaid ?? false,
-        personId: _selectedPersonId,
+        personId: personId,
       );
 
       if (widget.debt != null) {
@@ -122,8 +139,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       ),
       body: BlocBuilder<DebtCubit, DebtState>(
         builder: (context, state) {
-          final persons = state.persons;
-
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20.0),
             child: Form(
@@ -158,61 +173,52 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                   ),
                   const Gap(24),
 
-                  // Person Selection
-                  if (persons.isNotEmpty) ...[
-                    DropdownButtonFormField<String>(
-                      value: _selectedPersonId,
-                      decoration: InputDecoration(
-                        labelText: 'Select Person',
-                        prefixIcon: const Icon(Icons.person),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                  TextFormField(
+                    controller: _nameController,
+                    readOnly: _selectedPersonId != null,
+                    decoration: InputDecoration(
+                      labelText: isLent ? 'Person Name' : 'Lender Name',
+                      prefixIcon: const Icon(Icons.person_outline),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      items: persons.map((p) {
-                        return DropdownMenuItem(
-                          value: p.id,
-                          child: Text(p.name),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedPersonId = value;
-                          if (value != null) {
-                            _nameController.text = persons.firstWhere((p) => p.id == value).name;
-                          }
-                        });
-                      },
-                      validator: (value) => value == null ? 'Please select a person' : null,
+                      filled: _selectedPersonId != null,
                     ),
-                    const Gap(16),
-                  ] else ...[
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: isLent ? 'Person Name' : 'Lender Name',
-                        prefixIcon: const Icon(Icons.person_outline),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter a name';
+                      }
+                      return null;
+                    },
+                  ),
+                  const Gap(16),
+
+                  TextFormField(
+                    controller: _reasonController,
+                    decoration: InputDecoration(
+                      labelText: 'Reason',
+                      hintText: 'e.g., Lunch, Taxi, Borrowed for shop',
+                      prefixIcon: const Icon(Icons.help_outline),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter a name';
-                        }
-                        return null;
-                      },
                     ),
-                    const Gap(16),
-                  ],
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter a reason';
+                      }
+                      return null;
+                    },
+                  ),
+                  const Gap(16),
 
                   TextFormField(
                     controller: _amountController,
                     keyboardType: TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
                       labelText: isLent
-                          ? 'Amount Lent (ETB)'
-                          : 'Amount Borrowed (ETB)',
+                          ? 'Amount (ETB)'
+                          : 'Amount (ETB)',
                       prefixIcon: const Icon(Icons.attach_money),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -232,7 +238,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.calendar_today),
-                    title: Text(isLent ? 'Date Lent' : 'Date Borrowed'),
+                    title: Text(isLent ? 'Date' : 'Date'),
                     subtitle: Text(DateFormat.yMMMd().format(_selectedDate)),
                     onTap: _pickDate,
                     trailing: const Icon(Icons.chevron_right),
