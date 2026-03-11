@@ -30,8 +30,9 @@ class SummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
-            Color(0xFF4e54c8), // Cyber-ish Blue
-            Color(0xFF8f94fb), // Softer Purple-Blue
+            Color(0xFF0F2027), // Deep dark cyan
+            Color(0xFF203A43), // Dark cyan
+            Color(0xFF2C5364), // Muted blue-cyan
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -39,24 +40,46 @@ class SummaryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4e54c8).withOpacity(0.4),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: const Color(0xFF0F2027).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Stack(
         children: [
-          // Decorative background circle
+          // Decorative background circles for modern tech feel
           Positioned(
-            right: -20,
-            top: -20,
+            right: -30,
+            top: -30,
             child: Container(
-              width: 150,
-              height: 150,
+              width: 180,
+              height: 180,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.white.withOpacity(0.1),
+                    Colors.white.withOpacity(0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: -20,
+            bottom: -20,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF22D3EE).withOpacity(0.15),
+                    const Color(0xFF22D3EE).withOpacity(0.0),
+                  ],
+                ),
               ),
             ),
           ),
