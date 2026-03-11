@@ -261,69 +261,7 @@ class MonthlyReportScreen extends StatelessWidget {
                 ),
               ),
               const Gap(16),
-              Row(
-                children: [
-                  _SummaryItem(
-                    label: 'Income',
-                    amount: stats.totalIncome,
-                    color: Colors.greenAccent[400]!,
-                  ),
-                  const Gap(12),
-                  _SummaryItem(
-                    label: 'Expense',
-                    amount: stats.totalSpent,
-                    color: Colors.redAccent,
-                  ),
-                ],
-              ),
-              const Gap(12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF0F2027), // Deep dark cyan
-                      Color(0xFF203A43), // Dark cyan
-                      Color(0xFF2C5364), // Muted blue-cyan
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0F2027).withOpacity(0.2),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Net Balance',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white70,
-                      ),
-                    ),
-                    const Gap(8),
-                    Text(
-                      'ETB ${stats.netBalance.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -1.0,
-                        color: stats.netBalance >= 0
-                            ? Colors.greenAccent[400]
-                            : Colors.redAccent[400],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // Removed income, expense, and net balance cards as per request
               const Gap(24),
               Center(
                 child: Text(
@@ -338,136 +276,33 @@ class MonthlyReportScreen extends StatelessWidget {
               ),
               const Gap(32),
 
-              // Bar Chart
-              if (stats.totalSpent > 0)
+              // Pie Chart
+              if (stats.totalSpent > 0 && sortedCatKeys.isNotEmpty)
                 AspectRatio(
-                  aspectRatio: 1.7,
-                  child: BarChart(
-                    BarChartData(
-                      gridData: const FlGridData(show: false),
-                      barTouchData: BarTouchData(
-                        touchTooltipData: BarTouchTooltipData(
-                          getTooltipColor: (_) => Colors.blueGrey.shade900,
-                          tooltipPadding: const EdgeInsets.all(8),
-                          tooltipMargin: 8,
-                          getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                            return BarTooltipItem(
-                              '${rod.toY.toStringAsFixed(0)}\n',
-                              const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                              children: <TextSpan>[
-                                TextSpan(
-                                  text: (viewMode == ReportViewMode.weekly)
-                                      ? 'Day'
-                                      : (viewMode == ReportViewMode.monthly)
-                                      ? 'Week'
-                                      : 'Month',
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                      titlesData: FlTitlesData(
-                        show: true,
-                        rightTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        topTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            getTitlesWidget: (value, meta) {
-                              String text = '';
-                              if (viewMode == ReportViewMode.weekly) {
-                                const days = [
-                                  'M',
-                                  'T',
-                                  'W',
-                                  'T',
-                                  'F',
-                                  'S',
-                                  'S',
-                                ];
-                                if (value >= 0 && value < 7) {
-                                  text = days[value.toInt()];
-                                }
-                              } else if (viewMode == ReportViewMode.monthly) {
-                                text = 'W${value.toInt() + 1}';
-                              } else {
-                                const months = [
-                                  'J',
-                                  'F',
-                                  'M',
-                                  'A',
-                                  'M',
-                                  'J',
-                                  'J',
-                                  'A',
-                                  'S',
-                                  'O',
-                                  'N',
-                                  'D',
-                                ];
-                                if (value >= 0 && value < 12) {
-                                  text = months[value.toInt()];
-                                }
-                              }
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: Text(
-                                  text,
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
+                  aspectRatio: 1.5,
+                  child: PieChart(
+                    PieChartData(
+                      sectionsSpace: 4,
+                      centerSpaceRadius: 70,
                       borderData: FlBorderData(show: false),
-                      barGroups: stats.periodicTotals.asMap().entries.map((
-                        entry,
-                      ) {
-                        return BarChartGroupData(
-                          x: entry.key,
-                          barRods: [
-                            BarChartRodData(
-                              toY: entry.value,
-                              gradient: LinearGradient(
-                                colors: [
-                                  Theme.of(context).colorScheme.primary.withOpacity(0.6),
-                                  Theme.of(context).colorScheme.primary,
-                                ],
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
-                              ),
-                              width: 20,
-                              borderRadius: BorderRadius.circular(6),
-                              backDrawRodData: BackgroundBarChartRodData(
-                                show: true,
-                                toY:
-                                    stats.periodicTotals.reduce(
-                                      (a, b) => a > b ? a : b,
-                                    ) *
-                                    1.1,
-                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                              ),
-                            ),
-                          ],
+                      sections: sortedCatKeys.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final catId = entry.value;
+                        final val = stats.categoryTotals[catId]!;
+                        final color = colors[index % colors.length];
+                        final pct = (val / stats.totalSpent * 100).toStringAsFixed(0);
+                        
+                        return PieChartSectionData(
+                          color: color,
+                          value: val,
+                          title: pct == '0' ? '' : '$pct%',
+                          radius: 50,
+                          titleStyle: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: [Shadow(color: Colors.black26, blurRadius: 2)],
+                          ),
                         );
                       }).toList(),
                     ),
@@ -675,74 +510,3 @@ class MonthlyReportScreen extends StatelessWidget {
   }
 }
 
-class _SummaryItem extends StatelessWidget {
-  final String label;
-  final double amount;
-  final Color color;
-
-  const _SummaryItem({
-    required this.label,
-    required this.amount,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            )
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    label == 'Income' ? Icons.arrow_upward : Icons.arrow_downward,
-                    size: 14,
-                    color: color,
-                  ),
-                ),
-                const Gap(8),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-            const Gap(12),
-            Text(
-              'ETB ${amount.toStringAsFixed(0)}',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: Theme.of(context).colorScheme.onSurface,
-                letterSpacing: -0.5,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
