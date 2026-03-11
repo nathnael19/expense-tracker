@@ -6,6 +6,7 @@ import '../models/shortcut_model.dart';
 import '../models/debt_model.dart';
 import '../models/shopping_item_model.dart';
 import '../models/shopping_list_model.dart';
+import '../models/person_model.dart';
 
 class StorageService {
   static const String expenseBoxName = 'expenses';
@@ -15,6 +16,7 @@ class StorageService {
   static const String debtBoxName = 'debts';
   static const String budgetBoxName = 'budgets';
   static const String shoppingListBoxName = 'shopping_lists';
+  static const String personBoxName = 'persons';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -29,6 +31,7 @@ class StorageService {
     _safeRegisterAdapter(BudgetModelAdapter());
     _safeRegisterAdapter(ShoppingItemModelAdapter());
     _safeRegisterAdapter(ShoppingListModelAdapter());
+    _safeRegisterAdapter(PersonModelAdapter());
 
     await Hive.openBox<ExpenseModel>(expenseBoxName);
     await Hive.openBox<CategoryModel>(categoryBoxName);
@@ -36,6 +39,7 @@ class StorageService {
     await Hive.openBox<DebtModel>(debtBoxName);
     await Hive.openBox<BudgetModel>(budgetBoxName);
     await Hive.openBox<ShoppingListModel>(shoppingListBoxName);
+    await Hive.openBox<PersonModel>(personBoxName);
     await Hive.openBox(settingsBoxName);
   }
 
@@ -49,6 +53,7 @@ class StorageService {
   static Box<BudgetModel> get budgetBox => Hive.box<BudgetModel>(budgetBoxName);
   static Box<ShoppingListModel> get shoppingListBox =>
       Hive.box<ShoppingListModel>(shoppingListBoxName);
+  static Box<PersonModel> get personBox => Hive.box<PersonModel>(personBoxName);
   static Box get settingsBox => Hive.box(settingsBoxName);
 
   // Helper methods for Expenses
