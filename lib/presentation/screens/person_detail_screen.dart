@@ -197,17 +197,69 @@ class _DebtItemTile extends StatelessWidget {
                 color: color,
               ),
             ),
-            if (debt.isPaid)
-              const Text(
-                'Paid',
+            const Gap(4),
+            if (!debt.isPaid)
+              InkWell(
+                onTap: () {
+                  context.read<DebtCubit>().togglePaidStatus(debt);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    isLent ? 'Mark Paid' : 'Mark Repaid',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              )
+            else
+              Text(
+                isLent ? 'Paid' : 'Repaid',
                 style: TextStyle(
-                  color: Colors.grey,
+                  color: color,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ),
           ],
         ),
+        onLongPress: () {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Delete Record'),
+              content: const Text(
+                'Are you sure you want to delete this record?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    context.read<DebtCubit>().deleteDebt(debt.id);
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text(
+                    'Delete',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
