@@ -20,7 +20,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
   final _reasonController = TextEditingController();
   late DateTime _selectedDate;
   DateTime? _dueDate;
@@ -33,7 +32,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
     if (widget.debt != null) {
       _nameController.text = widget.debt!.personName;
       _amountController.text = widget.debt!.amount.toString();
-      _noteController.text = widget.debt!.note;
       _reasonController.text = widget.debt!.reason ?? '';
       _selectedDate = widget.debt!.date;
       _dueDate = widget.debt!.dueDate;
@@ -53,7 +51,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   void dispose() {
     _nameController.dispose();
     _amountController.dispose();
-    _noteController.dispose();
     _reasonController.dispose();
     super.dispose();
   }
@@ -89,14 +86,18 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   void _saveDebt() {
     if (_formKey.currentState!.validate()) {
       final amount = double.tryParse(_amountController.text) ?? 0.0;
-      
+
       // If we don't have a personId but the name matches exactly one of our persons, link it
       String? personId = _selectedPersonId;
       if (personId == null) {
         final state = context.read<DebtCubit>().state;
-        final matchedPerson = state.persons.where(
-          (p) => p.name.toLowerCase() == _nameController.text.trim().toLowerCase()
-        ).firstOrNull;
+        final matchedPerson = state.persons
+            .where(
+              (p) =>
+                  p.name.toLowerCase() ==
+                  _nameController.text.trim().toLowerCase(),
+            )
+            .firstOrNull;
         if (matchedPerson != null) {
           personId = matchedPerson.id;
         }
@@ -108,7 +109,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         amount: amount,
         date: _selectedDate,
         dueDate: _dueDate,
-        note: _noteController.text.trim(),
+        note: '',
         reason: _reasonController.text.trim(),
         type: _selectedType,
         isPaid: widget.debt?.isPaid ?? false,
@@ -214,11 +215,11 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
 
                   TextFormField(
                     controller: _amountController,
-                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
-                      labelText: isLent
-                          ? 'Amount (ETB)'
-                          : 'Amount (ETB)',
+                      labelText: isLent ? 'Amount (ETB)' : 'Amount (ETB)',
                       prefixIcon: const Icon(Icons.attach_money),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -263,18 +264,6 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                             },
                           )
                         : const Icon(Icons.chevron_right),
-                  ),
-                  const Gap(8),
-                  TextFormField(
-                    controller: _noteController,
-                    decoration: InputDecoration(
-                      labelText: 'Note (Optional)',
-                      prefixIcon: const Icon(Icons.notes),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    maxLines: 2,
                   ),
                   const Gap(32),
                   FilledButton(
