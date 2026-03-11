@@ -2,13 +2,20 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
 import '../../data/models/debt_model.dart';
+import '../../data/models/person_model.dart';
 
 class DebtState {
   final List<DebtModel> debts;
+  final List<PersonModel> persons;
   final bool isLoading;
   final String? error;
 
-  DebtState({this.debts = const [], this.isLoading = false, this.error});
+  DebtState({
+    this.debts = const [],
+    this.persons = const [],
+    this.isLoading = false,
+    this.error,
+  });
 
   List<DebtModel> get activeDebts =>
       debts.where((d) => !d.isPaid).toList()
@@ -22,9 +29,32 @@ class DebtState {
       .where((d) => d.type == DebtType.lent)
       .fold(0.0, (sum, d) => sum + d.amount);
 
-  DebtState copyWith({List<DebtModel>? debts, bool? isLoading, String? error}) {
+  double getPersonBalance(String personId) {
+    final person = persons.where((p) => p.id == personId).firstOrNull;
+    if (person == null) return 0.0;
+    
+    final personDebts = debts.where((d) => d.personId == personId || (d.personId == null && d.personName == person.name));
+    double balance = 0;
+    for (var d in personDebts) {
+      if (d.isPaid) continue;
+      if (d.type == DebtType.lent) {
+        balance += d.amount;
+      } else {
+        balance -= d.amount;
+      }
+    }
+    return balance;
+  }
+
+  DebtState copyWith({
+    List<DebtModel>? debts,
+    List<PersonModel>? persons,
+    bool? isLoading,
+    String? error,
+  }) {
     return DebtState(
       debts: debts ?? this.debts,
+      persons: persons ?? this.persons,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
     );
@@ -33,7 +63,9 @@ class DebtState {
 
 class DebtCubit extends Cubit<DebtState> {
   static const String boxName = 'debts';
+  static const String personBoxName = 'persons';
   late Box<DebtModel> _box;
+  late Box<PersonModel> _personBox;
 
   DebtCubit() : super(DebtState(isLoading: true)) {
     Future.microtask(() => _init());
@@ -42,6 +74,7 @@ class DebtCubit extends Cubit<DebtState> {
   Future<void> _init() async {
     try {
       _box = await Hive.openBox<DebtModel>(boxName);
+      _personBox = await Hive.openBox<PersonModel>(personBoxName);
       loadDebts();
     } catch (e) {
       debugPrint('Error initializing DebtCubit: $e');
@@ -50,9 +83,35 @@ class DebtCubit extends Cubit<DebtState> {
   }
 
   void loadDebts() {
-    emit(state.copyWith(debts: _box.values.toList(), isLoading: false));
+    emit(state.copyWith(
+      debts: _box.values.toList(),
+      persons: _personBox.values.toList(),
+      isLoading: false,
+    ));
   }
 
+  // Person Methods
+  Future<void> addPerson(PersonModel person) async {
+    try {
+      await _personBox.put(person.id, person);
+      emit(state.copyWith(persons: _personBox.values.toList()));
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
+    }
+  }
+
+  Future<void> deletePerson(String id) async {
+    try {
+      await _personBox.delete(id);
+      // Optional: Delete all debts for this person? 
+      // User didn't specify, let's keep debts for now but they'll be "orphaned"
+      emit(state.copyWith(persons: _personBox.values.toList()));
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
+    }
+  }
+
+  // Debt Methods
   Future<void> addDebt(DebtModel debt) async {
     try {
       await _box.put(debt.id, debt);
@@ -65,7 +124,7 @@ class DebtCubit extends Cubit<DebtState> {
 
   Future<void> updateDebt(DebtModel debt) async {
     try {
-      await debt.save();
+      await _box.put(debt.id, debt);
       emit(state.copyWith(debts: _box.values.toList()));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
@@ -83,9 +142,6 @@ class DebtCubit extends Cubit<DebtState> {
 
   Future<void> togglePaidStatus(DebtModel debt) async {
     final updatedDebt = debt.copyWith(isPaid: !debt.isPaid);
-    // Be careful with direct ID put if the original object instance is reused from Hive
-    // Using HiveObject save/delete is safer when we have the object reference from the box
-    // But since we created copyWith we need to put it back using the key
     await _box.put(debt.id, updatedDebt);
     emit(state.copyWith(debts: _box.values.toList()));
   }
