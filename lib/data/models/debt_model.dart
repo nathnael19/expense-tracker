@@ -39,6 +39,9 @@ class DebtModel extends HiveObject {
   @HiveField(8)
   final String? personId;
 
+  @HiveField(9)
+  final String? reason;
+
   DebtModel({
     required this.id,
     required this.personName,
@@ -49,6 +52,7 @@ class DebtModel extends HiveObject {
     this.note = '',
     this.type = DebtType.lent,
     this.personId,
+    this.reason = '',
   });
 
   DebtModel copyWith({
@@ -61,6 +65,7 @@ class DebtModel extends HiveObject {
     String? note,
     DebtType? type,
     String? personId,
+    String? reason,
   }) {
     return DebtModel(
       id: id ?? this.id,
@@ -72,6 +77,7 @@ class DebtModel extends HiveObject {
       note: note ?? this.note,
       type: type ?? this.type,
       personId: personId ?? this.personId,
+      reason: reason ?? this.reason,
     );
   }
 }
