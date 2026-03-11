@@ -178,10 +178,13 @@ class _DebtItemTile extends StatelessWidget {
           ),
         ),
         title: Text(
-          isLent ? 'Lent' : 'Borrowed',
+          (debt.reason ?? '').isNotEmpty ? debt.reason! : (isLent ? 'Lent' : 'Borrowed'),
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text(DateFormat.yMMMd().format(debt.date)),
+        subtitle: Text(
+          '${isLent ? 'Lent' : 'Borrowed'} • ${DateFormat.yMMMd().format(debt.date)}',
+          style: const TextStyle(fontSize: 12),
+        ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
