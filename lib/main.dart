@@ -65,11 +65,11 @@ class MyApp extends StatelessWidget {
             themeMode: themeMode,
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xFF2C3E50),
+                seedColor: const Color(0xFF0891B2), // Cyan 600
                 brightness: Brightness.light,
               ),
               useMaterial3: true,
-              scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+              scaffoldBackgroundColor: const Color(0xFFF1F5F9), // Slate 100
               textTheme: GoogleFonts.interTextTheme().copyWith(
                 displayLarge: GoogleFonts.inter(),
                 displayMedium: GoogleFonts.inter(),
@@ -91,17 +91,25 @@ class MyApp extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 scrolledUnderElevation: 0,
+                centerTitle: false,
+              ),
+              cardTheme: CardThemeData(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                color: Colors.white,
               ),
             ),
             darkTheme: ThemeData(
               colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xFF4e54c8),
+                seedColor: const Color(0xFF22D3EE), // Cyan 400
                 brightness: Brightness.dark,
-                surface: const Color(0xFF1E1E1E),
-                background: const Color(0xFF121212),
+                surface: const Color(0xFF1E293B), // Slate 800
+                background: const Color(0xFF0F172A), // Slate 900
               ),
               useMaterial3: true,
-              scaffoldBackgroundColor: const Color(0xFF121212),
+              scaffoldBackgroundColor: const Color(0xFF0F172A), // Slate 900
               textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme)
                   .copyWith(
                     displayLarge: GoogleFonts.inter(),
@@ -124,6 +132,14 @@ class MyApp extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 scrolledUnderElevation: 0,
+                centerTitle: false,
+              ),
+              cardTheme: CardThemeData(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                color: const Color(0xFF1E293B), // Slate 800
               ),
             ),
             home: const MainWrapper(),
