@@ -330,26 +330,54 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
               const Gap(16),
 
-              // 1. Amount Input (Primary Focus)
-              TextField(
-                controller: _amountController,
-                autofocus: widget.expense == null, // Only autofocus on new
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                style: const TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                ),
-                decoration: InputDecoration(
-                  prefixText: 'ETB ',
-                  border: InputBorder.none,
-                  hintText: '0',
-                  hintStyle: TextStyle(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant.withOpacity(0.6),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                   ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Amount',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Gap(8),
+                    TextField(
+                      controller: _amountController,
+                      autofocus: widget.expense == null,
+                      textAlign: TextAlign.center,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w800,
+                        color: _type == TransactionType.income
+                            ? Colors.greenAccent[700]
+                            : Theme.of(context).colorScheme.onSurface,
+                        letterSpacing: -1.5,
+                      ),
+                      decoration: InputDecoration(
+                        prefixText: 'ETB ',
+                        prefixStyle: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                        ),
+                        border: InputBorder.none,
+                        hintText: '0',
+                        hintStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.3),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
