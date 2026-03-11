@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
@@ -47,293 +48,369 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final settingsState = context.watch<SettingsCubit>().state;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings'), elevation: 0),
+      appBar: AppBar(
+        title: const Text('Settings', style: TextStyle(fontWeight: FontWeight.w700)),
+        centerTitle: true,
+        elevation: 0,
+      ),
       body: ListView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(vertical: 24),
         children: [
-          const Gap(16),
           // General Section
           _buildSectionHeader('General'),
-          ListTile(
-            leading: const Icon(Icons.category),
-            title: const Text('Manage Categories'),
-            subtitle: const Text('Add, edit, or remove categories'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (ctx) => const CategoryManagementScreen(),
-                ),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.account_balance_wallet_outlined),
-            title: const Text('Set Monthly Budget'),
-            subtitle: const Text('Define your monthly spending limit'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (ctx) => const BudgetScreen()));
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.repeat),
-            title: const Text('Recurring Transactions'),
-            subtitle: const Text('Manage repeat expenses'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (ctx) => const RecurringTransactionsScreen(),
-                ),
-              );
-            },
-          ),
+          _buildSettingsGroup([
+            _buildListTile(
+              icon: Icons.category_outlined,
+              title: 'Manage Categories',
+              subtitle: 'Add, edit, or remove categories',
+              iconColor: Colors.orangeAccent,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (ctx) => const CategoryManagementScreen()),
+              ),
+            ),
+            const Divider(height: 1, indent: 56),
+            _buildListTile(
+              icon: Icons.account_balance_wallet_outlined,
+              title: 'Set Monthly Budget',
+              subtitle: 'Define your monthly spending limit',
+              iconColor: Colors.blueAccent,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (ctx) => const BudgetScreen()),
+              ),
+            ),
+            const Divider(height: 1, indent: 56),
+            _buildListTile(
+              icon: Icons.repeat_rounded,
+              title: 'Recurring Transactions',
+              subtitle: 'Manage repeat expenses',
+              iconColor: Colors.greenAccent[700]!,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (ctx) => const RecurringTransactionsScreen()),
+              ),
+            ),
+          ]),
 
-          const Divider(),
+          const Gap(24),
 
           // Appearance Section
           _buildSectionHeader('Appearance'),
-          BlocBuilder<ThemeCubit, ThemeMode>(
-            builder: (context, themeMode) {
-              final isDark = themeMode == ThemeMode.dark;
-              return SwitchListTile(
-                secondary: Icon(isDark ? Icons.dark_mode : Icons.light_mode),
-                title: const Text('Dark Mode'),
-                subtitle: const Text('Toggle application theme'),
-                value: isDark,
-                onChanged: (val) {
-                  context.read<ThemeCubit>().toggleTheme(
-                    val ? ThemeMode.dark : ThemeMode.light,
-                  );
-                },
-              );
-            },
-          ),
-          const Divider(),
+          _buildSettingsGroup([
+            BlocBuilder<ThemeCubit, ThemeMode>(
+              builder: (context, themeMode) {
+                final isDark = themeMode == ThemeMode.dark;
+                return ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.indigoAccent.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(isDark ? Icons.dark_mode : Icons.light_mode, color: Colors.indigoAccent),
+                  ),
+                  title: const Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: const Text('Toggle application theme'),
+                  trailing: CupertinoSwitch(
+                    activeColor: Theme.of(context).colorScheme.primary,
+                    value: isDark,
+                    onChanged: (val) {
+                      context.read<ThemeCubit>().toggleTheme(
+                        val ? ThemeMode.dark : ThemeMode.light,
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ]),
 
-          const Divider(),
+          const Gap(24),
 
           // Notifications Section
           _buildSectionHeader('Notifications'),
-          SwitchListTile(
-            secondary: const Icon(Icons.notifications_active_outlined),
-            title: const Text('Daily Reminders'),
-            subtitle: const Text('Get reminded to log your expenses'),
-            value: settingsState.reminderEnabled,
-            onChanged: (val) {
-              context.read<SettingsCubit>().toggleReminder(val);
-            },
-          ),
-          if (settingsState.reminderEnabled)
+          _buildSettingsGroup([
             ListTile(
-              leading: const Icon(Icons.access_time),
-              title: const Text('Reminder Time'),
-              subtitle: Text(settingsState.reminderTime.format(context)),
-              trailing: const Icon(Icons.edit, size: 16),
-              onTap: () async {
-                final picked = await showTimePicker(
-                  context: context,
-                  initialTime: settingsState.reminderTime,
-                );
-                if (picked != null) {
-                  context.read<SettingsCubit>().updateReminderTime(picked);
-                }
-              },
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.notifications_active_outlined, color: Colors.amber),
+              ),
+              title: const Text('Daily Reminders', style: TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: const Text('Get reminded to log your expenses'),
+              trailing: CupertinoSwitch(
+                activeColor: Theme.of(context).colorScheme.primary,
+                value: settingsState.reminderEnabled,
+                onChanged: (val) {
+                  context.read<SettingsCubit>().toggleReminder(val);
+                },
+              ),
             ),
+            if (settingsState.reminderEnabled) ...[
+              const Divider(height: 1, indent: 56),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Colors.transparent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.access_time, color: Colors.grey),
+                ),
+                title: const Text('Reminder Time', style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: Text(settingsState.reminderTime.format(context)),
+                trailing: const Icon(Icons.edit, size: 16, color: Colors.grey),
+                onTap: () async {
+                  final picked = await showTimePicker(
+                    context: context,
+                    initialTime: settingsState.reminderTime,
+                  );
+                  if (picked != null) {
+                    context.read<SettingsCubit>().updateReminderTime(picked);
+                  }
+                },
+              ),
+            ],
+          ]),
 
-          const Divider(),
+          const Gap(24),
 
           // Security Section
           _buildSectionHeader('Security'),
-          if (_biometricsAvailable)
-            SwitchListTile(
-              secondary: const Icon(Icons.fingerprint),
-              title: const Text('App Lock'),
-              subtitle: const Text('Require authentication on launch'),
-              value: settingsState.isAppLockEnabled,
-              onChanged: (val) {
-                context.read<SettingsCubit>().toggleAppLock(val);
-              },
-            )
-          else
-            const ListTile(
-              leading: Icon(Icons.lock_outline, color: Colors.grey),
-              title: Text('App Lock Unavailable'),
-              subtitle: Text('Biometrics not supported on this device'),
-            ),
+          _buildSettingsGroup([
+            if (_biometricsAvailable)
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.fingerprint, color: Colors.redAccent),
+                ),
+                title: const Text('App Lock', style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('Require authentication on launch'),
+                trailing: CupertinoSwitch(
+                  activeColor: Theme.of(context).colorScheme.primary,
+                  value: settingsState.isAppLockEnabled,
+                  onChanged: (val) {
+                    context.read<SettingsCubit>().toggleAppLock(val);
+                  },
+                ),
+              )
+            else
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.lock_outline, color: Colors.grey),
+                ),
+                title: const Text('App Lock Unavailable', style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('Biometrics not supported on this device'),
+              ),
+          ]),
 
-          const Divider(),
+          const Gap(24),
 
           // Cloud Sync Section
           _buildSectionHeader('Cloud Sync'),
-          BlocConsumer<SyncCubit, SyncState>(
-            listener: (context, syncState) {
-              if (syncState.status == SyncStatus.success) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Sync successful!')),
-                );
+          _buildSettingsGroup([
+            BlocConsumer<SyncCubit, SyncState>(
+              listener: (context, syncState) {
+                if (syncState.status == SyncStatus.success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Sync successful!')),
+                  );
 
-                // Reload data in all cubits to reflect restored data
-                context.read<ExpenseCubit>().loadExpenses();
-                context.read<CategoryCubit>().loadCategories();
-                context.read<BudgetCubit>().loadBudgets();
-                context.read<DebtCubit>().loadDebts();
-                context.read<ShoppingCubit>().loadShoppingLists();
-                context.read<ShortcutCubit>().loadShortcuts();
+                  // Reload data in all cubits to reflect restored data
+                  context.read<ExpenseCubit>().loadExpenses();
+                  context.read<CategoryCubit>().loadCategories();
+                  context.read<BudgetCubit>().loadBudgets();
+                  context.read<DebtCubit>().loadDebts();
+                  context.read<ShoppingCubit>().loadShoppingLists();
+                  context.read<ShortcutCubit>().loadShortcuts();
 
-                context.read<SyncCubit>().resetStatus();
-              } else if (syncState.status == SyncStatus.error) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(syncState.errorMessage ?? 'Sync failed'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-                context.read<SyncCubit>().resetStatus();
-              }
-            },
-            builder: (context, syncState) {
-              if (!syncState.isSignedIn) {
-                return ListTile(
-                  leading: const Icon(Icons.cloud_outlined),
-                  title: const Text('Sign in with Google'),
-                  subtitle: const Text('Backup and sync your data'),
-                  trailing: syncState.status == SyncStatus.syncing
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: syncState.status == SyncStatus.syncing
-                      ? null
-                      : () {
-                          context.read<SyncCubit>().signIn();
-                        },
-                );
-              }
-
-              // User is signed in
-              return Column(
-                children: [
-                  ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: syncState.user?.photoUrl != null
-                          ? NetworkImage(syncState.user!.photoUrl!)
-                          : null,
-                      child: syncState.user?.photoUrl == null
-                          ? const Icon(Icons.person)
-                          : null,
+                  context.read<SyncCubit>().resetStatus();
+                } else if (syncState.status == SyncStatus.error) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(syncState.errorMessage ?? 'Sync failed'),
+                      backgroundColor: Colors.red,
                     ),
-                    title: Text(syncState.user?.displayName ?? 'User'),
-                    subtitle: Text(syncState.user?.email ?? ''),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.logout, size: 20),
-                      onPressed: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            title: const Text('Sign Out?'),
-                            content: const Text(
-                              'You will no longer sync data to Google Drive.',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, false),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text('Sign Out'),
-                              ),
-                            ],
-                          ),
-                        );
-
-                        if (confirm == true && context.mounted) {
-                          context.read<SyncCubit>().signOut();
-                        }
-                      },
-                    ),
-                  ),
-                  if (syncState.lastSyncTime != null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'Last synced: ${DateFormat('MMM d, y h:mm a').format(syncState.lastSyncTime!)}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
+                  );
+                  context.read<SyncCubit>().resetStatus();
+                }
+              },
+              builder: (context, syncState) {
+                if (!syncState.isSignedIn) {
+                  return ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        shape: BoxShape.circle,
                       ),
+                      child: const Icon(Icons.cloud_outlined, color: Colors.blue),
                     ),
-                  const Gap(8),
-                  ListTile(
-                    leading: const Icon(Icons.sync),
-                    title: const Text('Sync Now'),
-                    subtitle: const Text('Upload and sync your data'),
+                    title: const Text('Sign in with Google', style: TextStyle(fontWeight: FontWeight.w600)),
+                    subtitle: const Text('Backup and sync your data'),
                     trailing: syncState.status == SyncStatus.syncing
                         ? const SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : null,
+                        : const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
                     onTap: syncState.status == SyncStatus.syncing
                         ? null
                         : () {
-                            context.read<SyncCubit>().syncNow();
+                            context.read<SyncCubit>().signIn();
                           },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.cloud_download),
-                    title: const Text('Restore from Cloud'),
-                    subtitle: const Text('Download and restore backup'),
-                    onTap: syncState.status == SyncStatus.syncing
-                        ? null
-                        : () async {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                title: const Text('Restore from Cloud?'),
-                                content: const Text(
-                                  'This will OVERWRITE all current data with your cloud backup. Are you sure?',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx, false),
-                                    child: const Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx, true),
-                                    child: const Text(
-                                      'Restore',
-                                      style: TextStyle(color: Colors.orange),
-                                    ),
-                                  ),
-                                ],
+                  );
+                }
+
+                // User is signed in
+                return Column(
+                  children: [
+                    ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: syncState.user?.photoUrl != null
+                            ? NetworkImage(syncState.user!.photoUrl!)
+                            : null,
+                        child: syncState.user?.photoUrl == null
+                            ? const Icon(Icons.person)
+                            : null,
+                      ),
+                      title: Text(syncState.user?.displayName ?? 'User', style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(syncState.user?.email ?? ''),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.logout, size: 20, color: Colors.redAccent),
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Sign Out?'),
+                              content: const Text(
+                                'You will no longer sync data to Google Drive.',
                               ),
-                            );
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  child: const Text('Sign Out', style: TextStyle(color: Colors.red)),
+                                ),
+                              ],
+                            ),
+                          );
 
-                            if (confirm == true && context.mounted) {
-                              context.read<SyncCubit>().restoreBackup();
-                            }
-                          },
-                  ),
-                ],
-              );
-            },
-          ),
+                          if (confirm == true && context.mounted) {
+                            context.read<SyncCubit>().signOut();
+                          }
+                        },
+                      ),
+                    ),
+                    if (syncState.lastSyncTime != null)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 72, right: 16, bottom: 8),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Last synced: ${DateFormat('MMM d, y h:mm a').format(syncState.lastSyncTime!)}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.outline,
+                            ),
+                          ),
+                        ),
+                      ),
+                    const Divider(height: 1, indent: 56),
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.teal.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.sync, color: Colors.teal),
+                      ),
+                      title: const Text('Sync Now', style: TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: const Text('Upload and sync your data'),
+                      trailing: syncState.status == SyncStatus.syncing
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                      onTap: syncState.status == SyncStatus.syncing
+                          ? null
+                          : () {
+                              context.read<SyncCubit>().syncNow();
+                            },
+                    ),
+                    const Divider(height: 1, indent: 56),
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.cloud_download, color: Colors.orange),
+                      ),
+                      title: const Text('Restore from Cloud', style: TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: const Text('Download and restore backup'),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                      onTap: syncState.status == SyncStatus.syncing
+                          ? null
+                          : () async {
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Restore from Cloud?'),
+                                  content: const Text(
+                                    'This will OVERWRITE all current data with your cloud backup. Are you sure?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx, false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      child: const Text(
+                                        'Restore',
+                                        style: TextStyle(color: Colors.orange),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
 
-          const Divider(),
+                              if (confirm == true && context.mounted) {
+                                context.read<SyncCubit>().restoreBackup();
+                              }
+                            },
+                    ),
+                  ],
+                );
+              },
+            ),
+          ]),
 
           const Gap(40),
           Center(
             child: Text(
               'Version 1.0.0',
-              style: TextStyle(color: Colors.grey[400], fontSize: 12),
+              style: TextStyle(color: Colors.grey[400], fontSize: 13, fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -343,15 +420,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.only(left: 32, bottom: 8),
       child: Text(
-        title,
+        title.toUpperCase(),
         style: TextStyle(
           color: Theme.of(context).colorScheme.primary,
           fontWeight: FontWeight.bold,
-          fontSize: 14,
+          fontSize: 12,
+          letterSpacing: 1.2,
         ),
       ),
+    );
+  }
+
+  Widget _buildSettingsGroup(List<Widget> children) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          )
+        ],
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5)),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Column(
+          children: children,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildListTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: iconColor.withOpacity(0.1),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: iconColor),
+      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+      onTap: onTap,
     );
   }
 }
