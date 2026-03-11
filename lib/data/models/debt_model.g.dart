@@ -26,13 +26,14 @@ class DebtModelAdapter extends TypeAdapter<DebtModel> {
       note: fields[6] as String,
       type: fields[7] as DebtType,
       personId: fields[8] as String?,
+      reason: fields[9] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, DebtModel obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class DebtModelAdapter extends TypeAdapter<DebtModel> {
       ..writeByte(7)
       ..write(obj.type)
       ..writeByte(8)
-      ..write(obj.personId);
+      ..write(obj.personId)
+      ..writeByte(9)
+      ..write(obj.reason);
   }
 
   @override
