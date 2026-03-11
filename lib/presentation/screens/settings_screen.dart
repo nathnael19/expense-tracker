@@ -366,8 +366,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         child: const Icon(Icons.cloud_download, color: Colors.orange),
                       ),
-                      title: const Text('Restore from Cloud', style: TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: const Text('Download and restore backup'),
+                      title: const Text('Restore (Append)', style: TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: const Text('Add missing records from cloud'),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
                       onTap: syncState.status == SyncStatus.syncing
                           ? null
@@ -375,9 +375,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               final confirm = await showDialog<bool>(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
-                                  title: const Text('Restore from Cloud?'),
+                                  title: const Text('Restore & Append?'),
                                   content: const Text(
-                                    'This will OVERWRITE all current data with your cloud backup. Are you sure?',
+                                    'This will add records from your cloud backup that are missing locally. Existing local data will NOT be deleted.',
                                   ),
                                   actions: [
                                     TextButton(
