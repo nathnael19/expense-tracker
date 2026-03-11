@@ -181,6 +181,11 @@ class MonthlyReportScreen extends StatelessWidget {
                   onSelectionChanged: (value) {
                     statsCubit.changeViewMode(value.first);
                   },
+                  style: SegmentedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    selectedBackgroundColor: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
+                    selectedForegroundColor: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
               const Gap(24),
@@ -196,29 +201,48 @@ class MonthlyReportScreen extends StatelessWidget {
 
                     return Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       decoration: BoxDecoration(
                         color: isLess
-                            ? Colors.green.withOpacity(0.1)
-                            : Colors.orange.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
+                            ? Colors.greenAccent.withOpacity(0.05)
+                            : Colors.redAccent.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: isLess
-                              ? Colors.green.withOpacity(0.3)
-                              : Colors.orange.withOpacity(0.3),
+                              ? Colors.greenAccent.withOpacity(0.2)
+                              : Colors.redAccent.withOpacity(0.2),
                         ),
                       ),
-                      child: Text(
-                        isLess
-                            ? '🎉 Spent $pct% less than previous ${viewMode.name}!'
-                            : '⚠️ Spent $pct% more than previous ${viewMode.name}.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: isLess
-                              ? Colors.green[800]
-                              : Colors.orange[900],
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isLess
+                                  ? Colors.greenAccent.withOpacity(0.1)
+                                  : Colors.redAccent.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isLess ? Icons.trending_down : Icons.trending_up,
+                              color: isLess ? Colors.greenAccent[700] : Colors.redAccent[700],
+                              size: 20,
+                            ),
+                          ),
+                          const Gap(16),
+                          Expanded(
+                            child: Text(
+                              isLess
+                                  ? 'Great! You spent $pct% less than the previous ${viewMode.name}.'
+                                  : 'Watch out. You spent $pct% more than the previous ${viewMode.name}.',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },
@@ -255,12 +279,25 @@ class MonthlyReportScreen extends StatelessWidget {
               const Gap(12),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primaryContainer.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(20),
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF0F2027), // Deep dark cyan
+                      Color(0xFF203A43), // Dark cyan
+                      Color(0xFF2C5364), // Muted blue-cyan
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0F2027).withOpacity(0.2),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
@@ -269,18 +306,19 @@ class MonthlyReportScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey,
+                        color: Colors.white70,
                       ),
                     ),
                     const Gap(8),
                     Text(
                       'ETB ${stats.netBalance.toStringAsFixed(2)}',
                       style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 36,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -1.0,
                         color: stats.netBalance >= 0
-                            ? Colors.green[800]
-                            : Colors.red[800],
+                            ? Colors.greenAccent[400]
+                            : Colors.redAccent[400],
                       ),
                     ),
                   ],
@@ -409,11 +447,16 @@ class MonthlyReportScreen extends StatelessWidget {
                           barRods: [
                             BarChartRodData(
                               toY: entry.value,
-                              color: Theme.of(context).colorScheme.primary,
-                              width: 16,
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(4),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                                  Theme.of(context).colorScheme.primary,
+                                ],
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
                               ),
+                              width: 20,
+                              borderRadius: BorderRadius.circular(6),
                               backDrawRodData: BackgroundBarChartRodData(
                                 show: true,
                                 toY:
@@ -421,9 +464,7 @@ class MonthlyReportScreen extends StatelessWidget {
                                       (a, b) => a > b ? a : b,
                                     ) *
                                     1.1,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.surfaceVariant.withOpacity(0.3),
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
                               ),
                             ),
                           ],
@@ -462,21 +503,24 @@ class MonthlyReportScreen extends StatelessWidget {
                   final index = sortedCatKeys.indexOf(catId);
                   final color = colors[index % colors.length];
 
-                  return InkWell(
-                    onTap: () {
-                      _showCategoryDetails(
-                        context,
-                        cat,
-                        stats.expenses
-                            .where((e) => e.categoryId == catId)
-                            .toList(),
-                        color,
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Row(
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: InkWell(
+                      onTap: () {
+                        _showCategoryDetails(
+                          context,
+                          cat,
+                          stats.expenses
+                              .where((e) => e.categoryId == catId)
+                              .toList(),
+                          color,
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
                         children: [
                           Container(
                             width: 44,
@@ -534,8 +578,9 @@ class MonthlyReportScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                  );
-                }),
+                  ),
+                );
+              }),
             ],
           ),
         ),
@@ -645,30 +690,54 @@ class _SummaryItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.3)),
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: color.withOpacity(0.8),
-              ),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    label == 'Income' ? Icons.arrow_upward : Icons.arrow_downward,
+                    size: 14,
+                    color: color,
+                  ),
+                ),
+                const Gap(8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
-            const Gap(4),
+            const Gap(12),
             Text(
               'ETB ${amount.toStringAsFixed(0)}',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: color.withOpacity(1),
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).colorScheme.onSurface,
+                letterSpacing: -0.5,
               ),
             ),
           ],
