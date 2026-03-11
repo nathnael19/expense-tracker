@@ -287,14 +287,14 @@ class _DebtList extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  debt.personName,
+                  (debt.reason ?? '').isNotEmpty ? debt.reason! : debt.personName,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${isLent ? 'Lent' : 'Borrowed'}: ${DateFormat.yMMMd().format(debt.date)}',
+                      '${(debt.reason ?? '').isNotEmpty ? '${debt.personName} • ' : ''}${isLent ? 'Lent' : 'Borrowed'}: ${DateFormat.yMMMd().format(debt.date)}',
                       style: const TextStyle(fontSize: 12),
                     ),
                     if (debt.dueDate != null && isActive)
