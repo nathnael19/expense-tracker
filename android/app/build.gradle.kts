@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.nathnael.expense_tracker_offline"
+    namespace = "com.nathnael19.expense_tracker_offline"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
