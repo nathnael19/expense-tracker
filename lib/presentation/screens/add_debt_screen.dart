@@ -4,11 +4,13 @@ import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/models/debt_model.dart';
+import '../../data/models/person_model.dart';
 import '../blocs/debt_cubit.dart';
 
 class AddDebtScreen extends StatefulWidget {
   final DebtModel? debt;
-  const AddDebtScreen({super.key, this.debt});
+  final PersonModel? initialPerson;
+  const AddDebtScreen({super.key, this.debt, this.initialPerson});
 
   @override
   State<AddDebtScreen> createState() => _AddDebtScreenState();
@@ -22,6 +24,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   late DateTime _selectedDate;
   DateTime? _dueDate;
   late DebtType _selectedType;
+  String? _selectedPersonId;
 
   @override
   void initState() {
@@ -33,9 +36,14 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       _selectedDate = widget.debt!.date;
       _dueDate = widget.debt!.dueDate;
       _selectedType = widget.debt!.type;
+      _selectedPersonId = widget.debt!.personId;
     } else {
       _selectedDate = DateTime.now();
       _selectedType = DebtType.lent;
+      _selectedPersonId = widget.initialPerson?.id;
+      if (widget.initialPerson != null) {
+        _nameController.text = widget.initialPerson!.name;
+      }
     }
   }
 
@@ -87,9 +95,14 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         note: _noteController.text.trim(),
         type: _selectedType,
         isPaid: widget.debt?.isPaid ?? false,
+        personId: _selectedPersonId,
       );
 
-      context.read<DebtCubit>().addDebt(newDebt);
+      if (widget.debt != null) {
+        context.read<DebtCubit>().updateDebt(newDebt);
+      } else {
+        context.read<DebtCubit>().addDebt(newDebt);
+      }
       Navigator.pop(context);
     }
   }
@@ -107,155 +120,179 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
               : (isLent ? 'Add Lending Record' : 'Add Borrowing Record'),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Type Toggle
-              SegmentedButton<DebtType>(
-                segments: const [
-                  ButtonSegment(
-                    value: DebtType.lent,
-                    label: Text('I Lent'),
-                    icon: Icon(Icons.arrow_upward),
+      body: BlocBuilder<DebtCubit, DebtState>(
+        builder: (context, state) {
+          final persons = state.persons;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Type Toggle
+                  SegmentedButton<DebtType>(
+                    segments: const [
+                      ButtonSegment(
+                        value: DebtType.lent,
+                        label: Text('I Lent'),
+                        icon: Icon(Icons.arrow_upward),
+                      ),
+                      ButtonSegment(
+                        value: DebtType.borrowed,
+                        label: Text('I Borrowed'),
+                        icon: Icon(Icons.arrow_downward),
+                      ),
+                    ],
+                    selected: {_selectedType},
+                    onSelectionChanged: (newSelection) {
+                      setState(() {
+                        _selectedType = newSelection.first;
+                      });
+                    },
+                    style: SegmentedButton.styleFrom(
+                      selectedBackgroundColor: primaryColor,
+                      selectedForegroundColor: Colors.white,
+                    ),
                   ),
-                  ButtonSegment(
-                    value: DebtType.borrowed,
-                    label: Text('I Borrowed'),
-                    icon: Icon(Icons.arrow_downward),
+                  const Gap(24),
+
+                  // Person Selection
+                  if (persons.isNotEmpty) ...[
+                    DropdownButtonFormField<String>(
+                      value: _selectedPersonId,
+                      decoration: InputDecoration(
+                        labelText: 'Select Person',
+                        prefixIcon: const Icon(Icons.person),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      items: persons.map((p) {
+                        return DropdownMenuItem(
+                          value: p.id,
+                          child: Text(p.name),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedPersonId = value;
+                          if (value != null) {
+                            _nameController.text = persons.firstWhere((p) => p.id == value).name;
+                          }
+                        });
+                      },
+                      validator: (value) => value == null ? 'Please select a person' : null,
+                    ),
+                    const Gap(16),
+                  ] else ...[
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: isLent ? 'Person Name' : 'Lender Name',
+                        prefixIcon: const Icon(Icons.person_outline),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter a name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const Gap(16),
+                  ],
+
+                  TextFormField(
+                    controller: _amountController,
+                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      labelText: isLent
+                          ? 'Amount Lent (ETB)'
+                          : 'Amount Borrowed (ETB)',
+                      prefixIcon: const Icon(Icons.attach_money),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter an amount';
+                      }
+                      if (double.tryParse(value) == null) {
+                        return 'Please enter a valid number';
+                      }
+                      return null;
+                    },
+                  ),
+                  const Gap(16),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.calendar_today),
+                    title: Text(isLent ? 'Date Lent' : 'Date Borrowed'),
+                    subtitle: Text(DateFormat.yMMMd().format(_selectedDate)),
+                    onTap: _pickDate,
+                    trailing: const Icon(Icons.chevron_right),
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.event_available),
+                    title: const Text('Due Date (Optional)'),
+                    subtitle: Text(
+                      _dueDate != null
+                          ? DateFormat.yMMMd().format(_dueDate!)
+                          : 'Not set',
+                    ),
+                    onTap: _pickDueDate,
+                    trailing: _dueDate != null
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              setState(() {
+                                _dueDate = null;
+                              });
+                            },
+                          )
+                        : const Icon(Icons.chevron_right),
+                  ),
+                  const Gap(8),
+                  TextFormField(
+                    controller: _noteController,
+                    decoration: InputDecoration(
+                      labelText: 'Note (Optional)',
+                      prefixIcon: const Icon(Icons.notes),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    maxLines: 2,
+                  ),
+                  const Gap(32),
+                  FilledButton(
+                    onPressed: _saveDebt,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      widget.debt != null ? 'Update Record' : 'Save Record',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
-                selected: {_selectedType},
-                onSelectionChanged: (newSelection) {
-                  setState(() {
-                    _selectedType = newSelection.first;
-                  });
-                },
-                style: ButtonStyle(
-                  side: MaterialStateProperty.all(
-                    BorderSide(color: primaryColor),
-                  ),
-                  foregroundColor: MaterialStateProperty.resolveWith((states) {
-                    if (states.contains(MaterialState.selected)) {
-                      return Colors.white;
-                    }
-                    return primaryColor;
-                  }),
-                  backgroundColor: MaterialStateProperty.resolveWith((states) {
-                    if (states.contains(MaterialState.selected)) {
-                      return primaryColor;
-                    }
-                    return null;
-                  }),
-                ),
               ),
-              const Gap(24),
-
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: isLent ? 'Person Name' : 'Lender Name',
-                  prefixIcon: const Icon(Icons.person_outline),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a name';
-                  }
-                  return null;
-                },
-              ),
-              const Gap(16),
-              TextFormField(
-                controller: _amountController,
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  labelText: isLent
-                      ? 'Amount Lent (ETB)'
-                      : 'Amount Borrowed (ETB)',
-                  prefixIcon: const Icon(Icons.attach_money),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an amount';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Please enter a valid number';
-                  }
-                  return null;
-                },
-              ),
-              const Gap(16),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.calendar_today),
-                title: Text(isLent ? 'Date Lent' : 'Date Borrowed'),
-                subtitle: Text(DateFormat.yMMMd().format(_selectedDate)),
-                onTap: _pickDate,
-                trailing: const Icon(Icons.chevron_right),
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.event_available),
-                title: const Text('Due Date (Optional)'),
-                subtitle: Text(
-                  _dueDate != null
-                      ? DateFormat.yMMMd().format(_dueDate!)
-                      : 'Not set',
-                ),
-                onTap: _pickDueDate,
-                trailing: _dueDate != null
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            _dueDate = null;
-                          });
-                        },
-                      )
-                    : const Icon(Icons.chevron_right),
-              ),
-              const Gap(8),
-              TextFormField(
-                controller: _noteController,
-                decoration: InputDecoration(
-                  labelText: 'Note (Optional)',
-                  prefixIcon: const Icon(Icons.notes),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                maxLines: 2,
-              ),
-              const Gap(32),
-              FilledButton(
-                onPressed: _saveDebt,
-                style: FilledButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  widget.debt != null ? 'Update Record' : 'Save Record',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
