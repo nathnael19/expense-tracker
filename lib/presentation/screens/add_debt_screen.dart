@@ -68,8 +68,11 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
         date: _selectedDate, dueDate: _dueDate, note: '', reason: _reasonController.text.trim(), type: _selectedType,
         isPaid: widget.debt?.isPaid ?? false, personId: personId,
       );
-      if (widget.debt != null) context.read<DebtCubit>().updateDebt(newDebt);
-      else context.read<DebtCubit>().addDebt(newDebt);
+      if (widget.debt != null) {
+        context.read<DebtCubit>().updateDebt(newDebt);
+      } else {
+        context.read<DebtCubit>().addDebt(newDebt);
+      }
       Navigator.pop(context);
     }
   }
