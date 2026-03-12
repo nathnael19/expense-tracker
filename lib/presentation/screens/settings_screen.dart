@@ -58,7 +58,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Gap(40),
           Center(
             child: Text(
-              'Version 1.0.0',
+              'Version 2.0.0',
               style: TextStyle(color: Colors.grey[400], fontSize: 13, fontWeight: FontWeight.w500),
             ),
           ),
