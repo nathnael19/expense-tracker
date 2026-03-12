@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:uuid/uuid.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../data/models/category_model.dart';
 import '../blocs/category_cubit.dart';
 
@@ -14,13 +15,17 @@ class CategoryManagementScreen extends StatelessWidget {
 
     void showCategoryDialog({CategoryModel? category}) {
       final textController = TextEditingController(text: category?.name ?? '');
-      int selectedIcon = category?.iconCode ?? 0xe88e; // Default icon
+      int selectedIcon =
+          category?.iconCode ??
+          LucideIcons.circleHelp.codePoint; // Default icon
 
       showDialog(
         context: context,
         builder: (ctx) => Dialog(
           backgroundColor: Theme.of(context).colorScheme.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
           elevation: 8,
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -41,7 +46,10 @@ class CategoryManagementScreen extends StatelessWidget {
                     const Gap(24),
                     const Text(
                       'Category Name',
-                      style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey,
+                      ),
                     ),
                     const Gap(8),
                     TextField(
@@ -49,8 +57,13 @@ class CategoryManagementScreen extends StatelessWidget {
                       decoration: InputDecoration(
                         hintText: 'e.g. Groceries',
                         filled: true,
-                        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        fillColor: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide.none,
@@ -62,7 +75,10 @@ class CategoryManagementScreen extends StatelessWidget {
                     const Gap(24),
                     const Text(
                       'Select Icon',
-                      style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey,
+                      ),
                     ),
                     const Gap(12),
                     StatefulBuilder(
@@ -70,70 +86,86 @@ class CategoryManagementScreen extends StatelessWidget {
                         return Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.2),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5)),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant.withOpacity(0.5),
+                            ),
                           ),
                           child: Wrap(
                             spacing: 12,
                             runSpacing: 12,
                             alignment: WrapAlignment.center,
-                            children: [
-                              Icons.restaurant,
-                              Icons.shopping_bag,
-                              Icons.directions_car,
-                              Icons.home,
-                              Icons.payments,
-                              Icons.movie,
-                              Icons.medical_services,
-                              Icons.school,
-                              Icons.fitness_center,
-                              Icons.card_giftcard,
-                              Icons.work,
-                              Icons.flight,
-                              Icons.local_cafe,
-                              Icons.subscriptions,
-                              Icons.pets,
-                              Icons.savings,
-                              Icons.celebration,
-                              Icons.computer,
-                              Icons.electrical_services,
-                              Icons.home_repair_service,
-                            ].map((icon) {
-                              final isSelected = selectedIcon == icon.codePoint;
-                              return InkWell(
-                                onTap: () {
-                                  setDialogState(() {
-                                    selectedIcon = icon.codePoint;
-                                  });
-                                },
-                                borderRadius: BorderRadius.circular(16),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? Theme.of(context).colorScheme.primaryContainer
-                                        : Colors.transparent,
+                            children:
+                                [
+                                  LucideIcons.utensils,
+                                  LucideIcons.shoppingBag,
+                                  LucideIcons.car,
+                                  LucideIcons.house,
+                                  LucideIcons.banknote,
+                                  LucideIcons.film,
+                                  LucideIcons.activity,
+                                  LucideIcons.graduationCap,
+                                  LucideIcons.dumbbell,
+                                  LucideIcons.gift,
+                                  LucideIcons.briefcase,
+                                  LucideIcons.plane,
+                                  LucideIcons.coffee,
+                                  LucideIcons.tv,
+                                  LucideIcons.dog,
+                                  LucideIcons.piggyBank,
+                                  LucideIcons.partyPopper,
+                                  LucideIcons.monitor,
+                                  LucideIcons.zap,
+                                  LucideIcons.wrench,
+                                ].map((icon) {
+                                  final isSelected =
+                                      selectedIcon == icon.codePoint;
+                                  return InkWell(
+                                    onTap: () {
+                                      setDialogState(() {
+                                        selectedIcon = icon.codePoint;
+                                      });
+                                    },
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? Theme.of(context).colorScheme.primary
-                                          : Colors.transparent,
-                                      width: 2,
+                                    child: AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primaryContainer
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
+                                              : Colors.transparent,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        icon,
+                                        color: isSelected
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                            : Colors.grey[500],
+                                        size: 28,
+                                      ),
                                     ),
-                                  ),
-                                  child: Icon(
-                                    icon,
-                                    color: isSelected
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Colors.grey[500],
-                                    size: 28,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                                  );
+                                }).toList(),
                           ),
                         );
                       },
@@ -145,10 +177,18 @@ class CategoryManagementScreen extends StatelessWidget {
                         TextButton(
                           onPressed: () => Navigator.of(ctx).pop(),
                           style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w600)),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
                         ),
                         const Gap(12),
                         ElevatedButton(
@@ -169,18 +209,32 @@ class CategoryManagementScreen extends StatelessWidget {
                                 name: name,
                                 iconCode: selectedIcon,
                               );
-                              context.read<CategoryCubit>().addCategory(updatedCat);
+                              context.read<CategoryCubit>().addCategory(
+                                updatedCat,
+                              );
                             }
                             Navigator.of(ctx).pop();
                           },
                           style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.onPrimary,
                             elevation: 0,
                           ),
-                          child: const Text('Save', style: TextStyle(fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            'Save',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ],
                     ),
@@ -195,7 +249,10 @@ class CategoryManagementScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Categories', style: TextStyle(fontWeight: FontWeight.w700)),
+        title: const Text(
+          'Categories',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
         centerTitle: true,
         elevation: 0,
       ),
@@ -203,7 +260,11 @@ class CategoryManagementScreen extends StatelessWidget {
           ? const Center(
               child: Text(
                 'No categories yet.',
-                style: TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             )
           : ListView.builder(
@@ -222,29 +283,43 @@ class CategoryManagementScreen extends StatelessWidget {
                         color: Colors.black.withOpacity(0.03),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
-                      )
+                      ),
                     ],
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.4),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outlineVariant.withOpacity(0.4),
                     ),
                   ),
                   child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     leading: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primaryContainer.withOpacity(0.5),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Icon(
-                        IconData(cat.iconCode, fontFamily: 'MaterialIcons'),
+                        IconData(
+                          cat.iconCode,
+                          fontFamily: 'Lucide',
+                          fontPackage: 'lucide_icons_flutter',
+                        ),
                         color: Theme.of(context).colorScheme.primary,
                         size: 24,
                       ),
                     ),
                     title: Text(
                       cat.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -256,7 +331,11 @@ class CategoryManagementScreen extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           child: IconButton(
-                            icon: const Icon(Icons.edit_outlined, size: 20, color: Colors.blueGrey),
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              size: 20,
+                              color: Colors.blueGrey,
+                            ),
                             onPressed: () => showCategoryDialog(category: cat),
                           ),
                         ),
@@ -266,28 +345,42 @@ class CategoryManagementScreen extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           child: IconButton(
-                            icon: const Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              size: 20,
+                              color: Colors.redAccent,
+                            ),
                             onPressed: () async {
                               final confirm = await showDialog<bool>(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
                                   title: const Text('Delete Category?'),
-                                  content: Text('Are you sure you want to delete ${cat.name}?'),
+                                  content: Text(
+                                    'Are you sure you want to delete ${cat.name}?',
+                                  ),
                                   actions: [
                                     TextButton(
-                                      onPressed: () => Navigator.pop(ctx, false),
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, false),
                                       child: const Text('Cancel'),
                                     ),
                                     TextButton(
                                       onPressed: () => Navigator.pop(ctx, true),
-                                      child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                      child: const Text(
+                                        'Delete',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
                                     ),
                                   ],
                                 ),
                               );
                               if (confirm == true && context.mounted) {
-                                context.read<CategoryCubit>().deleteCategory(cat.id);
+                                context.read<CategoryCubit>().deleteCategory(
+                                  cat.id,
+                                );
                               }
                             },
                           ),
@@ -303,7 +396,10 @@ class CategoryManagementScreen extends StatelessWidget {
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         icon: const Icon(Icons.add),
-        label: const Text('New Category', style: TextStyle(fontWeight: FontWeight.bold)),
+        label: const Text(
+          'New Category',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
