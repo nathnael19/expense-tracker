@@ -367,7 +367,8 @@ class MonthlyReportScreen extends StatelessWidget {
                             child: Icon(
                               IconData(
                                 cat.iconCode,
-                                fontFamily: 'MaterialIcons',
+                                fontFamily: 'Lucide',
+                                fontPackage: 'lucide_icons_flutter',
                               ),
                               color: color,
                               size: 20,
@@ -450,7 +451,11 @@ class MonthlyReportScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
-                      IconData(category.iconCode, fontFamily: 'MaterialIcons'),
+                      IconData(
+                        category.iconCode,
+                        fontFamily: 'Lucide',
+                        fontPackage: 'lucide_icons_flutter',
+                      ),
                       color: color,
                     ),
                   ),
