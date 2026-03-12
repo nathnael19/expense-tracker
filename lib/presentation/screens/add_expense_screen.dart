@@ -611,7 +611,12 @@ class _CategoryChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              icon ?? IconData(iconCode!, fontFamily: 'MaterialIcons'),
+              icon ??
+                  IconData(
+                    iconCode!,
+                    fontFamily: 'Lucide',
+                    fontPackage: 'lucide_icons_flutter',
+                  ),
               size: 20,
               color: isSelected ? Colors.white : Colors.grey[600],
             ),
