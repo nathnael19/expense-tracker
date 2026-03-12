@@ -94,7 +94,11 @@ class _RecurringExpenseTile extends StatelessWidget {
             : Colors.red.withOpacity(0.1),
         child: Icon(
           category != null
-              ? IconData(category.iconCode, fontFamily: 'MaterialIcons')
+              ? IconData(
+                  category.iconCode,
+                  fontFamily: 'Lucide',
+                  fontPackage: 'lucide_icons_flutter',
+                )
               : Icons.category,
           color: isIncome ? Colors.green : Colors.red,
           size: 20,
