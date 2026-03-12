@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../local/storage_service.dart';
 import '../models/category_model.dart';
 import 'package:uuid/uuid.dart';
@@ -24,32 +24,32 @@ class CategoryRepository {
         CategoryModel(
           id: const Uuid().v4(),
           name: 'Food',
-          iconCode: Icons.restaurant.codePoint,
+          iconCode: LucideIcons.utensils.codePoint,
         ),
         CategoryModel(
           id: const Uuid().v4(),
           name: 'Shopping',
-          iconCode: Icons.shopping_bag.codePoint,
+          iconCode: LucideIcons.shoppingBag.codePoint,
         ),
         CategoryModel(
           id: const Uuid().v4(),
           name: 'Transport',
-          iconCode: Icons.directions_car.codePoint,
+          iconCode: LucideIcons.car.codePoint,
         ),
         CategoryModel(
           id: const Uuid().v4(),
           name: 'Entertainment',
-          iconCode: Icons.movie.codePoint,
+          iconCode: LucideIcons.film.codePoint,
         ),
         CategoryModel(
           id: const Uuid().v4(),
           name: 'Housing',
-          iconCode: Icons.home.codePoint,
+          iconCode: LucideIcons.house.codePoint,
         ),
         CategoryModel(
           id: const Uuid().v4(),
           name: 'Health',
-          iconCode: Icons.medical_services.codePoint,
+          iconCode: LucideIcons.activity.codePoint,
         ),
       ];
 
