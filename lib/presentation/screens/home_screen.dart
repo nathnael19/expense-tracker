@@ -272,7 +272,8 @@ class _TransactionItem extends StatelessWidget {
                       category != null
                           ? IconData(
                               category.iconCode,
-                              fontFamily: 'MaterialIcons',
+                              fontFamily: 'Lucide',
+                              fontPackage: 'lucide_icons_flutter',
                             )
                           : Icons.category,
                       color: category != null
