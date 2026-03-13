@@ -11,7 +11,6 @@ class GeneralSettingsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return SettingsSection(
       title: 'General',
       children: [
@@ -35,18 +34,6 @@ class GeneralSettingsGroup extends StatelessWidget {
           onTap: () => Navigator.of(
             context,
           ).push(MaterialPageRoute(builder: (ctx) => const BudgetScreen())),
-        ),
-        const Divider(height: 1, indent: 56),
-        SettingsTile(
-          icon: Icons.repeat_rounded,
-          title: 'Recurring Transactions',
-          subtitle: 'Manage repeat expenses',
-          iconColor: Colors.greenAccent[700]!,
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (ctx) => const RecurringTransactionsScreen(),
-            ),
-          ),
         ),
         const Divider(height: 1, indent: 56),
         SettingsTile(
