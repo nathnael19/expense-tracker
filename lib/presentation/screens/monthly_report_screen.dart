@@ -55,7 +55,9 @@ class MonthlyReportScreen extends StatelessWidget {
             icon: const Icon(Icons.calendar_today),
             onPressed: () async {
               final picked = await showDatePicker(context: context, initialDate: currentDate, firstDate: DateTime(2000), lastDate: DateTime.now());
-              if (picked != null) context.read<StatsCubit>().changeDate(picked);
+              if (picked != null && context.mounted) {
+                context.read<StatsCubit>().changeDate(picked);
+              }
             },
           ),
         ],
