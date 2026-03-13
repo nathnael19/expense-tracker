@@ -3,18 +3,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../data/services/google_auth_service.dart';
 import '../../data/services/google_drive_sync_service.dart';
+import '../../data/services/local_backup_service.dart';
 
 enum SyncStatus { idle, syncing, success, error }
 
 class SyncState {
   final SyncStatus status;
   final DateTime? lastSyncTime;
+  final DateTime? lastLocalBackupTime;
   final String? errorMessage;
   final GoogleSignInAccount? user;
 
   const SyncState({
     this.status = SyncStatus.idle,
     this.lastSyncTime,
+    this.lastLocalBackupTime,
     this.errorMessage,
     this.user,
   });
@@ -22,6 +25,7 @@ class SyncState {
   SyncState copyWith({
     SyncStatus? status,
     DateTime? lastSyncTime,
+    DateTime? lastLocalBackupTime,
     String? errorMessage,
     GoogleSignInAccount? user,
     bool clearError = false,
@@ -29,6 +33,7 @@ class SyncState {
     return SyncState(
       status: status ?? this.status,
       lastSyncTime: lastSyncTime ?? this.lastSyncTime,
+      lastLocalBackupTime: lastLocalBackupTime ?? this.lastLocalBackupTime,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       user: user ?? this.user,
     );
@@ -40,6 +45,7 @@ class SyncState {
 class SyncCubit extends Cubit<SyncState> {
   final GoogleAuthService _authService = GoogleAuthService();
   final GoogleDriveSyncService _syncService = GoogleDriveSyncService();
+  final LocalBackupService _localBackupService = LocalBackupService();
 
   SyncCubit() : super(const SyncState()) {
     _init();
@@ -49,8 +55,13 @@ class SyncCubit extends Cubit<SyncState> {
     await _authService.init();
     final user = _authService.getCurrentUser();
     final lastSync = await _syncService.getLastSyncTime();
+    final lastLocal = await _localBackupService.getLastBackupTime();
 
-    emit(state.copyWith(user: user, lastSyncTime: lastSync));
+    emit(state.copyWith(
+      user: user, 
+      lastSyncTime: lastSync,
+      lastLocalBackupTime: lastLocal,
+    ));
   }
 
   /// Sign in with Google
@@ -209,6 +220,109 @@ class SyncCubit extends Cubit<SyncState> {
         state.copyWith(
           status: SyncStatus.error,
           errorMessage: 'Restore error: $e',
+        ),
+      );
+    }
+  }
+
+  /// Create Local Backup
+  Future<void> createLocalBackup() async {
+    try {
+      emit(state.copyWith(status: SyncStatus.syncing, clearError: true));
+
+      final success = await _localBackupService.createBackup();
+
+      if (success) {
+        final lastLocal = await _localBackupService.getLastBackupTime();
+        emit(
+          state.copyWith(status: SyncStatus.success, lastLocalBackupTime: lastLocal),
+        );
+      } else {
+        emit(
+          state.copyWith(
+            status: SyncStatus.error,
+            errorMessage: 'Failed to create local backup',
+          ),
+        );
+      }
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: SyncStatus.error,
+          errorMessage: 'Local backup error: $e',
+        ),
+      );
+    }
+  }
+
+  /// Restore Local Backup
+  Future<void> restoreLocalBackup() async {
+    try {
+      emit(state.copyWith(status: SyncStatus.syncing, clearError: true));
+
+      final exists = await _localBackupService.backupExists();
+      if (!exists) {
+         emit(
+          state.copyWith(
+            status: SyncStatus.error,
+            errorMessage: 'No local backup found',
+          ),
+        );
+        return;
+      }
+
+      final success = await _localBackupService.restoreBackup();
+
+      if (success) {
+        final lastLocal = await _localBackupService.getLastBackupTime();
+        emit(
+          state.copyWith(status: SyncStatus.success, lastLocalBackupTime: lastLocal),
+        );
+      } else {
+        emit(
+          state.copyWith(
+            status: SyncStatus.error,
+            errorMessage: 'Failed to restore local backup',
+          ),
+        );
+      }
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: SyncStatus.error,
+          errorMessage: 'Local restore error: $e',
+        ),
+      );
+    }
+  }
+
+  /// Delete Local Backup
+  Future<void> deleteLocalBackup() async {
+    try {
+      emit(state.copyWith(status: SyncStatus.syncing, clearError: true));
+
+      final success = await _localBackupService.deleteBackup();
+
+      if (success) {
+        emit(
+          state.copyWith(
+            status: SyncStatus.success, 
+            lastLocalBackupTime: null, // clear the time
+          ),
+        );
+      } else {
+        emit(
+          state.copyWith(
+            status: SyncStatus.error,
+            errorMessage: 'Failed to delete local backup',
+          ),
+        );
+      }
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: SyncStatus.error,
+          errorMessage: 'Delete backup error: $e',
         ),
       );
     }
