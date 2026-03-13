@@ -40,7 +40,7 @@ class NotificationSettingsGroup extends StatelessWidget {
                 context: context,
                 initialTime: settingsState.reminderTime,
               );
-              if (picked != null) {
+              if (picked != null && context.mounted) {
                 context.read<SettingsCubit>().updateReminderTime(picked);
               }
             },
