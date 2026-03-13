@@ -18,7 +18,9 @@ class ExportPopupMenu extends StatelessWidget {
       onSelected: (value) {
         if (value == 'csv') {
           onExportCsv();
-        } else if (value == 'pdf') onExportPdf();
+        } else if (value == 'pdf') {
+          onExportPdf();
+        }
       },
       itemBuilder: (context) => [
         const PopupMenuItem(
