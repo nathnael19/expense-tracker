@@ -1,6 +1,6 @@
 # 📱 Expense Tracker Offline
 
-> A powerful, secure, and offline-first personal finance application for Android. Track expenses and income, manage debts, organize shopping lists, and now automatically detect transactions from SMS — all without an internet connection.
+> A powerful, secure, and offline-first personal finance application for Android. Track expenses and income, manage debts, organize shopping lists, and automatically detect transactions from SMS — all without an internet connection.
 
 ---
 
@@ -48,134 +48,94 @@ graph TD
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
 ### 📊 Expense & Income Tracking
-- **Quick Add**: Add expenses or income with amount, category, date, and note.
-- **Categorization**: Organize spending with customizable categories and icons.
-- **Shortcuts**: One-tap shortcuts for frequent expenses directly from the home menu.
-- **Transaction History**: Browse, search, filter, edit, and delete all past transactions.
-- **Recurring Transactions**: Set up **Weekly** or **Monthly** repeating transactions that auto-generate on schedule.
+- **Quick Add**: Seamlessly log expenses or income with amount, category, date, and notes.
+- **Categorization**: Use the built-in category management system with over 50 custom icons.
+- **One-Tap Shortcuts**: Create shortcuts for your most frequent transactions for even faster logging.
+- **Batch History**: A powerful history view with search, filtering, and editing capabilities.
+- **Recurring Transactions**: Set up scheduled expenses (Weekly/Monthly) that automatically populate in your ledger.
+
+### 💰 Smart Budgeting
+- **Granular Controls**: Set monthly spending limits globally or per category.
+- **Live Monitoring**: Dashboard widgets provide real-time feedback on your remaining budget.
+- **Visual Cues**: Color-coded progress bars change from green to red as you approach your limits.
+
+### 📈 Advanced Analytics
+- **Dynamic Charting**: Interactive bar and pie charts visualize your financial health across different time periods.
+- **Period Comparison**: Automatically compare your current spending with previous weeks or months.
+- **Drill-Down Capability**: Tap into any report segment to see the exact transactions making up that total.
+- **Pro Exports**: Generate detailed **PDF reports** or **CSV data dumps** for professional use.
+
+### 🤝 Debt & Relationship Manager
+- **Bilateral Tracking**: Keep track of money lent to or borrowed from individuals.
+- **Transaction Timelines**: View a full history of transactions for every contact.
+- **Settlement Tracking**: Easily mark debts as settled while maintaining a permanent record.
+
+### 🛒 Integrated Shopping Lists
+- **Cost Estimation**: Estimate prices for list items to see a projected total before you reach the store.
+- **Project Tracking**: Manage multiple lists simultaneously with progress indicators.
 
 ---
 
-### 💰 Budgeting
-- **Monthly Budgets**: Set spending limits per category or overall monthly spend.
-- **Visual Progress**: Dynamic progress bars on the dashboard show remaining budget in real time.
-- **Budget Alerts**: Visual cues warn when you're approaching or exceeding limits.
+## 📲 Smart Features
+
+### 📡 SMS Transaction Detection *(Android only)*
+The app can automatically parse bank SMS messages to log transactions instantly.
+- **Privacy First**: All parsing happens locally on your device. No data is sent to external servers.
+- **Duplicate Prevention**: Content-based hashing ensures that even if you receive multiple alerts, only one transaction is logged.
+- **Extensible Parsers**: Currently supports CBE, Telebirr, and MPesa patterns.
+
+### 🔐 Security & Backup
+- **Biometric Protection**: Lock the app behind Fingerprint or Face IDs using `local_auth`.
+- **Google Drive Sync**: Securely back up your Hive database to your own Google Drive storage.
+- **Local JSON Backup**: Export your entire database to a human-readable JSON file for manual archiving.
+- **Smart Merge**: Restore backups without deleting your current data — the app intelligently merges records.
 
 ---
 
-### 📈 Reports & Analytics
-- **Multi-Period View**: Switch between **Weekly**, **Monthly**, and **Yearly** views.
-- **Interactive Bar Charts**: Visualize income vs. expenses over time.
-- **Category Pie Charts**: See spending distribution by category at a glance.
-- **Category Drill-Down**: Tap any category to view its individual transactions.
-- **PDF & CSV Export**: Export financial history to PDF or CSV for records or external analysis.
-
----
-
-### 🛒 Shopping Lists
-- **Multiple Lists**: Create and manage separate lists (e.g., Groceries, Electronics).
-- **Item Costs**: Add estimated costs per item and track the running total.
-- **Completion Tracking**: Check off items as you shop with progress bars.
-- **Edit & Rename**: Update list names, item names, and costs at any time.
-- **Swipe to Delete**: Quickly remove lists or items you no longer need.
-
----
-
-### 🤝 Debt & Lending Manager
-- **Lent / Borrowed**: Track money you've given out or owe to others.
-- **Per-Person History**: View a full transaction timeline per contact.
-- **Due Dates**: Set optional due dates for reminder awareness.
-- **Mark as Paid**: Toggle debts as settled while preserving the history.
-- **Balance Summary**: See outstanding balances per person at a glance.
-
----
-
-### 📲 SMS Transaction Detection *(Android Only)*
-Automatically detect financial transactions from bank SMS messages and create expense/income entries without manual input.
-
-**Supported Services:**
-
-| Service | Pattern Detected | Type |
-|---|---|---|
-| **CBE** | `Credited with ETB X from [Name]` | ✅ Income |
-| **CBE** | `transfered ETB X to [Name]` | 💸 Expense |
-| **Telebirr** | `transferred ETB X to [Name]` | 💸 Expense |
-| **MPesa** | `purchased [Item] @X ETB` | 💸 Expense |
-
-**How it works:**
-
-```mermaid
-sequenceDiagram
-    participant Bank as 🏦 Bank / MobileMoney
-    participant Android as 📱 Android OS
-    participant Receiver as SmsReceiver (Kotlin)
-    participant Flutter as SmsService (Dart)
-    participant Parser as SmsParser
-    participant DB as Hive DB
-
-    Bank->>Android: Sends SMS
-    Android->>Receiver: Broadcasts SMS_RECEIVED
-    Receiver->>Flutter: EventChannel stream event
-    Flutter->>Flutter: Check smsDetectionEnabled
-    Flutter->>Flutter: Check duplicate hash
-    Flutter->>Parser: parse(body, timestamp)
-    Parser-->>Flutter: ParsedSms (amount, desc, type)
-    Flutter->>DB: Save ExpenseModel
-    Flutter->>Flutter: Show notification
-```
-
-- **Duplicate Protection**: Each SMS is hashed (SHA-256) so the same message is never added twice.
-- **Enable/Disable**: Toggle in **Settings → Notifications → SMS Transaction Detection**.
-- **Permissions Required**: `READ_SMS`, `RECEIVE_SMS` (prompted on first enable).
-
----
-
-### 🔒 Privacy, Security & Sync
-- **Offline First**: All data stored locally on the device — no account needed.
-- **App Lock**: Protect your data with biometric (fingerprint/face) or PIN authentication.
-- **Google Drive Backup**: Sync your database to your personal Google Drive account.
-- **Restore from Cloud**: Restore data from Google Drive without overwriting existing records.
-- **Local Backup & Restore**: Export and import your Hive database as a local file.
-
----
-
-### 🎨 Modern UI & Experience
-- **Dark Mode**: Fully supported system-aware dark theme.
-- **Smooth Animations**: Fluid page transitions and micro-interactions throughout.
-- **Premium Design**: Clean card-based layout with the Inter typeface.
-- **Daily Reminder Notifications**: Get reminded to log expenses at a time you choose.
+## 🎨 Design Philosophy
+- **Modern Aesthetics**: Built with a sleek, premium dark-mode-first design.
+- **Custom Branding**: Features a unique, professional app icon and a coordinated splash screen.
+- **Micro-Interactions**: Subtle animations and transitions make the app feel alive and responsive.
+- **Typography**: Uses the **Inter** font family for maximum readability.
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Layer | Technology |
+| Component | Technology |
 |---|---|
-| Framework | Flutter (Android-first) |
-| State Management | BLoC / Cubit |
-| Local Database | Hive (NoSQL) |
-| Cloud | Google Drive API + Firebase |
-| SMS Bridge | Native Kotlin EventChannel |
-| Notifications | flutter_local_notifications |
-| Security | local_auth (biometrics) |
-| Charts | fl_chart |
-| Fonts | Google Fonts — Inter |
-| Hashing | crypto (SHA-256) |
+| Framework | **Flutter** (Dart) |
+| State Management | **BLoC / Cubit** |
+| Local Database | **Hive (NoSQL)** |
+| Cloud Services | **Google APIs** |
+| Native Bridge | **Kotlin** (for SMS EventChannels) |
+| Formatting | **Intl** (Currency/Dates) |
+| Icons | **Lucide Icons** |
+| Security | **AES Encryption (proposed)** / Biometrics |
 
 ---
 
-## 📱 Getting Started
+## 🏗️ Building the App
 
-1. **Install**: Build and install the APK on your Android device.
-2. **Secure**: Enable **App Lock** in Settings for biometric protection.
-3. **Track**: Tap the `+` button to add your first expense or income.
-4. **Automate**: Go to **Settings → Notifications** and enable **SMS Transaction Detection** to let the app do the work.
-5. **Analyze**: Open **Reports** to review your spending patterns.
-6. **Backup**: Enable **Google Drive Sync** in Settings to keep your data safe.
+To build a professional, optimized release version of the app, use the following commands:
+
+### Standard Build
+```bash
+flutter build apk --release
+```
+
+### Optimized Split Build (Recommended)
+This command splits the APK per architecture, reducing the download size for users:
+```bash
+flutter build apk --split-per-abi --no-tree-shake-icons
+```
+
+> [!NOTE]
+> The `--no-tree-shake-icons` flag is required because the app uses dynamic IconData for user-selected category icons.
 
 ---
 
-*Take control of your finances — automatically.*
+*Take control of your financial future — one tap at a time.*
