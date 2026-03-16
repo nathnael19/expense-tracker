@@ -97,7 +97,7 @@ class SyncCubit extends Cubit<SyncState> {
   Future<void> signOut() async {
     try {
       await _authService.signOut();
-      emit(const SyncState(status: SyncStatus.idle));
+      emit(state.copyWith(status: SyncStatus.idle, user: null, clearError: true));
     } catch (e) {
       emit(
         state.copyWith(

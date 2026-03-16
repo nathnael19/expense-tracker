@@ -45,95 +45,103 @@ class SyncSettingsGroup extends StatelessWidget {
             }
           },
           builder: (context, syncState) {
-            if (!syncState.isSignedIn) {
-              return SettingsTile(
-                icon: Icons.cloud_outlined,
-                title: 'Sign in with Google',
-                subtitle: 'Backup and sync your data',
-                iconColor: Colors.blue,
-                trailing: syncState.status == SyncStatus.syncing
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : null,
-                onTap: syncState.status == SyncStatus.syncing
-                    ? null
-                    : () {
-                        context.read<SyncCubit>().signIn();
-                      },
-              );
-            }
-
             return Column(
               children: [
-                const ListTile(
-                   title: Text('Google Drive Sync', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
-                ),
-                ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: syncState.user?.photoUrl != null
-                        ? NetworkImage(syncState.user!.photoUrl!)
+                if (!syncState.isSignedIn)
+                  SettingsTile(
+                    icon: Icons.cloud_outlined,
+                    title: 'Sign in with Google',
+                    subtitle: 'Backup and sync your data',
+                    iconColor: Colors.blue,
+                    trailing: syncState.status == SyncStatus.syncing
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                         : null,
-                    child: syncState.user?.photoUrl == null
-                        ? const Icon(Icons.person)
-                        : null,
+                    onTap: syncState.status == SyncStatus.syncing
+                        ? null
+                        : () {
+                            context.read<SyncCubit>().signIn();
+                          },
+                  )
+                else ...[
+                  const ListTile(
+                    title: Text(
+                      'Google Drive Sync',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                    ),
                   ),
-                  title: Text(syncState.user?.displayName ?? 'User',
-                      style: const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(syncState.user?.email ?? ''),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.logout, size: 20, color: Colors.redAccent),
-                    onPressed: () => _showSignOutDialog(context),
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: syncState.user?.photoUrl != null
+                          ? NetworkImage(syncState.user!.photoUrl!)
+                          : null,
+                      child: syncState.user?.photoUrl == null
+                          ? const Icon(Icons.person)
+                          : null,
+                    ),
+                    title: Text(
+                      syncState.user?.displayName ?? 'User',
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(syncState.user?.email ?? ''),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.logout, size: 20, color: Colors.redAccent),
+                      onPressed: () => _showSignOutDialog(context),
+                    ),
                   ),
-                ),
-                if (syncState.lastSyncTime != null)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 72, right: 16, bottom: 8),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Last synced: ${DateFormat('MMM d, y h:mm a').format(syncState.lastSyncTime!)}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.outline,
+                  if (syncState.lastSyncTime != null)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 72, right: 16, bottom: 8),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Last synced: ${DateFormat('MMM d, y h:mm a').format(syncState.lastSyncTime!)}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
                         ),
                       ),
                     ),
+                  const Divider(height: 1, indent: 56),
+                  SettingsTile(
+                    icon: Icons.sync,
+                    title: 'Sync Now',
+                    subtitle: 'Upload and sync your data',
+                    iconColor: Colors.teal,
+                    trailing: syncState.status == SyncStatus.syncing
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : null,
+                    onTap: syncState.status == SyncStatus.syncing
+                        ? null
+                        : () {
+                            context.read<SyncCubit>().syncNow();
+                          },
                   ),
-                const Divider(height: 1, indent: 56),
-                SettingsTile(
-                  icon: Icons.sync,
-                  title: 'Sync Now',
-                  subtitle: 'Upload and sync your data',
-                  iconColor: Colors.teal,
-                  trailing: syncState.status == SyncStatus.syncing
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : null,
-                  onTap: syncState.status == SyncStatus.syncing
-                      ? null
-                      : () {
-                          context.read<SyncCubit>().syncNow();
-                        },
-                ),
-                const Divider(height: 1, indent: 56),
-                SettingsTile(
-                  icon: Icons.cloud_download,
-                  title: 'Restore (Append)',
-                  subtitle: 'Add missing records from cloud',
-                  iconColor: Colors.orange,
-                  onTap: syncState.status == SyncStatus.syncing
-                      ? null
-                      : () => _showRestoreDialog(context),
-                ),
+                  const Divider(height: 1, indent: 56),
+                  SettingsTile(
+                    icon: Icons.cloud_download,
+                    title: 'Restore (Append)',
+                    subtitle: 'Add missing records from cloud',
+                    iconColor: Colors.orange,
+                    onTap: syncState.status == SyncStatus.syncing
+                        ? null
+                        : () => _showRestoreDialog(context),
+                  ),
+                ],
                 const Divider(height: 1),
                 const ListTile(
-                   title: Text('Local Device Backup', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
+                  title: Text(
+                    'Local Device Backup',
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
+                  ),
                 ),
                 if (syncState.lastLocalBackupTime != null)
                   Padding(
@@ -154,7 +162,7 @@ class SyncSettingsGroup extends StatelessWidget {
                   title: 'Create Local Backup',
                   subtitle: 'Save a backup file to your device',
                   iconColor: Colors.teal,
-                   trailing: syncState.status == SyncStatus.syncing
+                  trailing: syncState.status == SyncStatus.syncing
                       ? const SizedBox(
                           width: 20,
                           height: 20,
@@ -177,7 +185,7 @@ class SyncSettingsGroup extends StatelessWidget {
                       ? null
                       : () => _showRestoreLocalDialog(context),
                 ),
-                 const Divider(height: 1, indent: 56),
+                const Divider(height: 1, indent: 56),
                 SettingsTile(
                   icon: Icons.delete_outline,
                   title: 'Delete Local Backup',
