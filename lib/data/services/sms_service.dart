@@ -1,5 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'dart:ui';
 
 import 'package:uuid/uuid.dart';
 import '../local/storage_service.dart';
@@ -10,6 +12,8 @@ import 'sms_parser.dart';
 import 'notification_service.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 
 class SmsService {
   static const MethodChannel _channel = MethodChannel('com.nathnael19.expense_tracker_offline/sms');
@@ -33,7 +37,7 @@ class SmsService {
   }
 
   /// Start listening for incoming SMS via the event channel.
-  void init() {
+  Future<void> init() async {
     _eventChannel.receiveBroadcastStream().listen((dynamic event) {
       if (event is Map) {
         final body = event['body'] as String?;
@@ -44,6 +48,47 @@ class SmsService {
         }
       }
     });
+
+    // Register background callback handle with Android
+    final CallbackHandle? handle =
+        PluginUtilities.getCallbackHandle(handleBackgroundSms);
+    if (handle != null) {
+      try {
+        await _channel.invokeMethod(
+            'registerSmsBackgroundTask', handle.toRawHandle());
+      } catch (e) {
+        debugPrint('SmsService: Failed to register background task: $e');
+      }
+    }
+  }
+
+  /// Handle SMS from background isolate.
+  @pragma('vm:entry-point')
+  static Future<void> handleBackgroundSms() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    const channel = MethodChannel(
+        'com.nathnael19.expense_tracker_offline/sms_background');
+    final Map<dynamic, dynamic>? event = await channel.invokeMethod('ready');
+
+    if (event != null) {
+      // 1. Initialize Hive if needed
+      if (!Hive.isBoxOpen('settings')) {
+        final appDir = await getApplicationDocumentsDirectory();
+        Hive.init(appDir.path);
+        await StorageService.init();
+      }
+
+      final body = event['body'] as String?;
+      final address = event['address'] as String?;
+      final date = event['date'] as int?;
+
+      if (body != null) {
+        await SmsService()
+            ._onSmsReceived(body: body, address: address, date: date);
+      }
+    }
+
+    await channel.invokeMethod('finished');
   }
 
   Future<void> _onSmsReceived({required String body, String? address, int? date}) async {
