@@ -19,13 +19,13 @@ class SmsParser {
   //
   // CBE Credit: "has been Credited with ETB 140.00 from Wakjira Tesema"
   static final _cbeCreditRegex = RegExp(
-    r'Credited with ETB ([\d,]+\.?\d{0,2}) from ([A-Za-z ]+?)(?:,|on )',
+    r'Credited with ETB ([\d,]+\.?\d{0,2}) from (.+?)(?:,|on |at |with )',
     caseSensitive: false,
   );
 
   // CBE Debit (transfer out): "You have transfered ETB 75.00 to Fasil Abera"
   static final _cbeDebitRegex = RegExp(
-    r'(?:transfered|transferred) ETB ([\d,]+\.?\d{0,2}) to ([A-Za-z ]+?)(?:on |\d)',
+    r'(?:transfered|transferred) ETB ([\d,]+\.?\d{0,2}) to (.+?)(?:on |at |with |\d)',
     caseSensitive: false,
   );
 
