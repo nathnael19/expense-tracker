@@ -67,7 +67,7 @@ class DebtItemTile extends StatelessWidget {
             if (!debt.isPaid)
               InkWell(
                 onTap: () {
-                  context.read<DebtCubit>().togglePaidStatus(debt);
+                  context.read<DebtCubit>().toggleDebtPaid(debt.id);
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(
