@@ -6,6 +6,8 @@ import 'dart:ui';
 import 'package:uuid/uuid.dart';
 import '../local/storage_service.dart';
 import '../models/expense_model.dart';
+import '../models/category_model.dart';
+import '../models/debt_model.dart';
 import '../repositories/expense_repository.dart';
 import '../repositories/category_repository.dart';
 import 'sms_parser.dart';
@@ -71,12 +73,14 @@ class SmsService {
     final Map<dynamic, dynamic>? event = await channel.invokeMethod('ready');
 
     if (event != null) {
-      // 1. Initialize Hive if needed
-      if (!Hive.isBoxOpen('settings')) {
-        final appDir = await getApplicationDocumentsDirectory();
-        Hive.init(appDir.path);
-        await StorageService.init();
-      }
+      // 1. Initialize Services for Background Isolate
+      final appDir = await getApplicationDocumentsDirectory();
+      Hive.init(appDir.path);
+      
+      // Register minimal adapters if needed, or better, use a shared init method
+      // that doesn't depend on Hive.initFlutter()
+      await _initHiveForBackground();
+      await NotificationService.init();
 
       final body = event['body'] as String?;
       final address = event['address'] as String?;
@@ -89,6 +93,28 @@ class SmsService {
     }
 
     await channel.invokeMethod('finished');
+  }
+
+  static Future<void> _initHiveForBackground() async {
+    // Manually register adapters because StorageService.init() uses initFlutter()
+    // and might have different dependencies.
+    _safeRegisterAdapter(ExpenseModelAdapter());
+    _safeRegisterAdapter(CategoryModelAdapter());
+    _safeRegisterAdapter(DebtModelAdapter());
+    _safeRegisterAdapter(DebtTypeAdapter());
+    _safeRegisterAdapter(TransactionTypeAdapter());
+    
+    // Open boxes
+    await Hive.openBox(StorageService.settingsBoxName);
+    await Hive.openBox<ExpenseModel>(StorageService.expenseBoxName);
+    await Hive.openBox<CategoryModel>(StorageService.categoryBoxName);
+    await Hive.openBox<String>(StorageService.processedSmsBoxName);
+  }
+
+  static void _safeRegisterAdapter<T>(TypeAdapter<T> adapter) {
+    if (!Hive.isAdapterRegistered(adapter.typeId)) {
+      Hive.registerAdapter(adapter);
+    }
   }
 
   Future<void> _onSmsReceived({required String body, String? address, int? date}) async {
