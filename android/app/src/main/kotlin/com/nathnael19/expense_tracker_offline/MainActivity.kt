@@ -13,6 +13,8 @@ import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.embedding.engine.FlutterEngineCache
+import io.flutter.embedding.engine.dart.DartExecutor
 
 class MainActivity : FlutterFragmentActivity() {
 
@@ -20,6 +22,8 @@ class MainActivity : FlutterFragmentActivity() {
         private const val SMS_CHANNEL = "com.nathnael19.expense_tracker_offline/sms"
         private const val SMS_EVENT_CHANNEL = "com.nathnael19.expense_tracker_offline/sms_stream"
         private const val SMS_PERMISSION_REQUEST_CODE = 101
+        private const val PREFS_NAME = "expense_tracker_prefs"
+        private const val CALLBACK_KEY = "sms_callback_handle"
     }
 
     private var eventSink: EventChannel.EventSink? = null
@@ -33,6 +37,15 @@ class MainActivity : FlutterFragmentActivity() {
             when (call.method) {
                 "requestSmsPermissions" -> {
                     requestSmsPermissions(result)
+                }
+                "registerSmsBackgroundTask" -> {
+                    val handle = call.arguments as? Long
+                    if (handle != null) {
+                        saveCallbackHandle(handle)
+                        result.success(true)
+                    } else {
+                        result.error("INVALID_ARGUMENT", "Callback handle is null", null)
+                    }
                 }
                 else -> result.notImplemented()
             }
@@ -98,6 +111,11 @@ class MainActivity : FlutterFragmentActivity() {
             // Return true optimistically — user will see the dialog
             result.success(true)
         }
+    }
+
+    private fun saveCallbackHandle(handle: Long) {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putLong(CALLBACK_KEY, handle).apply()
     }
 
     override fun onDestroy() {

@@ -13,7 +13,8 @@ class SmsReceiver : BroadcastReceiver() {
                 val body = smsMessage.messageBody ?: continue
                 val address = smsMessage.originatingAddress ?: ""
                 val timestamp = smsMessage.timestampMillis
-                // Broadcast to MainActivity via a local intent
+                
+                // 1. Send local broadcast (for active app)
                 val localIntent = Intent("SMS_RECEIVED_LOCAL").apply {
                     putExtra("body", body)
                     putExtra("address", address)
@@ -21,6 +22,21 @@ class SmsReceiver : BroadcastReceiver() {
                     setPackage(context?.packageName)
                 }
                 context?.sendBroadcast(localIntent)
+
+                // 2. Start background isolate if callback is registered
+                context?.let { ctx ->
+                    val prefs = ctx.getSharedPreferences("expense_tracker_prefs", Context.MODE_PRIVATE)
+                    val callbackHandle = prefs.getLong("sms_callback_handle", 0L)
+                    if (callbackHandle != 0L) {
+                         val serviceIntent = Intent(ctx, SmsBackgroundService::class.java).apply {
+                             putExtra("body", body)
+                             putExtra("address", address)
+                             putExtra("date", timestamp)
+                             putExtra("callbackHandle", callbackHandle)
+                         }
+                         ctx.startService(serviceIntent)
+                    }
+                }
             }
         }
     }
