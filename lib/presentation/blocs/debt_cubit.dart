@@ -32,6 +32,10 @@ class DebtState {
       .where((d) => d.type == DebtType.lent)
       .fold(0.0, (sum, d) => sum + d.amount);
 
+  double get totalBorrowed => activeDebts
+      .where((d) => d.type == DebtType.borrowed)
+      .fold(0.0, (sum, d) => sum + d.amount);
+
   double getPersonBalance(String personId) {
     final person = persons.where((p) => p.id == personId).firstOrNull;
     if (person == null) return 0.0;
