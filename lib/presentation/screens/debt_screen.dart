@@ -18,7 +18,12 @@ class DebtScreen extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: const _PersonList(),
+      body: Column(
+        children: [
+          const _DebtSummary(),
+          const Expanded(child: _PersonList()),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showDialog(
           context: context,
@@ -82,6 +87,115 @@ class _PersonList extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class _DebtSummary extends StatelessWidget {
+  const _DebtSummary();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<DebtCubit, DebtState>(
+      builder: (context, state) {
+        final totalLent = state.totalLent;
+        final totalBorrowed = state.totalBorrowed;
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardTheme.color,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
+                Expanded(
+                  child: _SummaryItem(
+                    title: 'THEY OWE',
+                    amount: totalLent,
+                    color: Colors.green,
+                    isPositive: true,
+                  ),
+                ),
+                VerticalDivider(
+                  color: Colors.grey.withOpacity(0.1),
+                  thickness: 1,
+                  indent: 4,
+                  endIndent: 4,
+                ),
+                Expanded(
+                  child: _SummaryItem(
+                    title: 'I OWE',
+                    amount: totalBorrowed,
+                    color: Colors.red,
+                    isPositive: false,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SummaryItem extends StatelessWidget {
+  final String title;
+  final double amount;
+  final Color color;
+  final bool isPositive;
+
+  const _SummaryItem({
+    required this.title,
+    required this.amount,
+    required this.color,
+    required this.isPositive,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 10,
+            letterSpacing: 0.5,
+            fontWeight: FontWeight.w700,
+            color: Theme.of(context).colorScheme.outline,
+          ),
+        ),
+        const Gap(4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isPositive ? Icons.add_circle_outline : Icons.remove_circle_outline,
+              size: 14,
+              color: color,
+            ),
+            const Gap(6),
+            Text(
+              '${amount.toStringAsFixed(0)} ETB',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
