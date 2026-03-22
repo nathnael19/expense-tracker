@@ -20,68 +20,54 @@ class LocalBackupService {
   static const String _backupFileName = 'expense_tracker_local_backup.json';
   static const String _timestampKey = 'last_local_backup_timestamp';
 
-  /// Get the local backup file path
-  Future<File> _getBackupFile() async {
-    final directory = await getApplicationDocumentsDirectory();
-    return File('${directory.path}/$_backupFileName');
-  }
-
-  /// Create a local backup
-  Future<bool> createBackup() async {
+  /// Generate a temporary backup file and return its path
+  Future<String?> createBackupFile() async {
     try {
       final data = await _exportAllData();
       final jsonData = jsonEncode(data);
 
-      final file = await _getBackupFile();
+      final directory = await getTemporaryDirectory();
+      final file = File('${directory.path}/$_backupFileName');
       await file.writeAsString(jsonData);
 
-      await _setLastBackupTime(DateTime.now());
-      return true;
+      return file.path;
     } catch (e) {
-      debugPrint('LOCAL_BACKUP_SERVICE createBackup ERROR: $e');
-      return false;
-    }
-  }
-
-  /// Check if a local backup exists
-  Future<bool> backupExists() async {
-    final file = await _getBackupFile();
-    return await file.exists();
-  }
-
-  /// Read data from the local backup file
-  Future<Map<String, dynamic>?> _readBackupData() async {
-    try {
-      final file = await _getBackupFile();
-      if (!await file.exists()) {
-        return null;
-      }
-
-      final jsonString = await file.readAsString();
-      return jsonDecode(jsonString) as Map<String, dynamic>;
-    } catch (e) {
-      debugPrint('LOCAL_BACKUP_SERVICE _readBackupData ERROR: $e');
+      debugPrint('LOCAL_BACKUP_SERVICE createBackupFile ERROR: $e');
       return null;
     }
   }
 
-  /// Restore data from local backup (APPEND logic like Google Drive sync)
-  Future<bool> restoreBackup() async {
+  /// Check if a local backup exists (now just checks for the last timestamp for UI)
+  Future<bool> backupExists() async {
+    // With the new share/picker approach, we can't easily check if the file still exists
+    // where the user saved it, but we can check if they've ever made one.
+    return await getLastBackupTime() != null;
+  }
+
+  /// Restore data from a specific file path (APPEND logic)
+  Future<bool> restoreBackupFromFile(String path) async {
     try {
-      final data = await _readBackupData();
-      if (data == null) {
+      final file = File(path);
+      if (!await file.exists()) {
         return false;
       }
+
+      final jsonString = await file.readAsString();
+      final data = jsonDecode(jsonString) as Map<String, dynamic>;
 
       await _importAllData(data);
       await _setLastBackupTime(DateTime.now());
       return true;
     } catch (e) {
-      debugPrint('LOCAL_BACKUP_SERVICE restoreBackup ERROR: $e');
+      debugPrint('LOCAL_BACKUP_SERVICE restoreBackupFromFile ERROR: $e');
       return false;
     }
   }
 
+  /// Set last backup time
+  Future<void> setLastBackupTime(DateTime time) async {
+    await _setLastBackupTime(time);
+  }
   /// Get the last backup timestamp
   Future<DateTime?> getLastBackupTime() async {
     final timestamp = StorageService.settingsBox.get(_timestampKey);
@@ -93,13 +79,9 @@ class LocalBackupService {
     await StorageService.settingsBox.put(_timestampKey, time.toIso8601String());
   }
 
-  /// Delete the local backup file
+  /// Delete the local backup record (clears the last backup time)
   Future<bool> deleteBackup() async {
     try {
-      final file = await _getBackupFile();
-      if (await file.exists()) {
-        await file.delete();
-      }
       await StorageService.settingsBox.delete(_timestampKey);
       return true;
     } catch (e) {
@@ -170,6 +152,14 @@ class LocalBackupService {
       final list = _shoppingListFromJson(listData as Map<String, dynamic>);
       if (!StorageService.shoppingListBox.containsKey(list.id)) {
         await StorageService.shoppingListBox.put(list.id, list);
+      }
+    }
+
+    // Import processed SMS IDs (Metatdata)
+    final processedSms = data['processed_sms'] as List<dynamic>? ?? [];
+    for (var smsId in processedSms) {
+      if (smsId is String && !StorageService.processedSmsBox.containsKey(smsId)) {
+        await StorageService.processedSmsBox.put(smsId, smsId);
       }
     }
   }
@@ -262,6 +252,7 @@ class LocalBackupService {
             },
           )
           .toList(),
+      'processed_sms': StorageService.processedSmsBox.values.toList(),
     };
   }
 
