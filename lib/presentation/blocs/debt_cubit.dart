@@ -110,10 +110,28 @@ class DebtCubit extends Cubit<DebtState> {
 
   Future<void> deletePerson(String id) async {
     try {
+      final person = _personBox.get(id);
+      if (person == null) return;
+
+      // 1. Delete all debts for this person to keep totals accurate
+      final debtIdsToDelete = _box.values
+          .where((d) =>
+              d.personId == id ||
+              (d.personId == null && d.personName == person.name))
+          .map((d) => d.id)
+          .toList();
+
+      for (var debtId in debtIdsToDelete) {
+        await _box.delete(debtId);
+      }
+
+      // 2. Delete the person
       await _personBox.delete(id);
-      // Optional: Delete all debts for this person? 
-      // User didn't specify, let's keep debts for now but they'll be "orphaned"
-      emit(state.copyWith(persons: _personBox.values.toList()));
+
+      emit(state.copyWith(
+        debts: _box.values.toList(),
+        persons: _personBox.values.toList(),
+      ));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
     }
