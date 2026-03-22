@@ -115,33 +115,69 @@ class _DebtSummary extends StatelessWidget {
               ),
             ],
           ),
-          child: IntrinsicHeight(
-            child: Row(
-              children: [
-                Expanded(
-                  child: _SummaryItem(
-                    title: 'THEY OWE',
-                    amount: totalLent,
-                    color: Colors.green,
-                    isPositive: true,
-                  ),
+          child: Column(
+            children: [
+              IntrinsicHeight(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _SummaryItem(
+                        title: 'THEY OWE',
+                        amount: totalLent,
+                        color: Colors.green,
+                        isPositive: true,
+                      ),
+                    ),
+                    VerticalDivider(
+                      color: Colors.grey.withOpacity(0.1),
+                      thickness: 1,
+                      indent: 4,
+                      endIndent: 4,
+                    ),
+                    Expanded(
+                      child: _SummaryItem(
+                        title: 'I OWE',
+                        amount: totalBorrowed,
+                        color: Colors.red,
+                        isPositive: false,
+                      ),
+                    ),
+                  ],
                 ),
-                VerticalDivider(
-                  color: Colors.grey.withOpacity(0.1),
-                  thickness: 1,
-                  indent: 4,
-                  endIndent: 4,
+              ),
+              const Gap(12),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                decoration: BoxDecoration(
+                  color: (state.totalNetBalance >= 0 ? Colors.green : Colors.red)
+                      .withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                Expanded(
-                  child: _SummaryItem(
-                    title: 'I OWE',
-                    amount: totalBorrowed,
-                    color: Colors.red,
-                    isPositive: false,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'TOTAL BALANCE: ',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                    Text(
+                      '${state.totalNetBalance.toStringAsFixed(0)} ETB',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: state.totalNetBalance >= 0
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
