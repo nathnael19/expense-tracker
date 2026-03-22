@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../data/services/google_auth_service.dart';
 import '../../data/services/google_drive_sync_service.dart';
@@ -275,7 +274,6 @@ class SyncCubit extends Cubit<SyncState> {
         );
 
         if (outputFile != null) {
-          final lastLocal = await _localBackupService.getLastBackupTime();
           await _localBackupService.setLastBackupTime(DateTime.now());
 
           emit(
