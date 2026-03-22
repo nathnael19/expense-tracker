@@ -20,24 +20,34 @@ class SyncSettingsGroup extends StatelessWidget {
       children: [
         BlocConsumer<SyncCubit, SyncState>(
           listener: (context, syncState) {
-            if (syncState.status == SyncStatus.success) {
+            // Cloud Sync Status Listener
+            if (syncState.cloudStatus == SyncStatus.success) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Sync successful!')),
+                const SnackBar(content: Text('Cloud sync successful!')),
               );
-
-              // Reload data in all cubits to reflect restored data
-              context.read<ExpenseCubit>().loadExpenses();
-              context.read<CategoryCubit>().loadCategories();
-              context.read<BudgetCubit>().loadBudgets();
-              context.read<DebtCubit>().loadDebts();
-              context.read<ShoppingCubit>().loadShoppingLists();
-              context.read<ShortcutCubit>().loadShortcuts();
-
+              _reloadAllData(context);
               context.read<SyncCubit>().resetStatus();
-            } else if (syncState.status == SyncStatus.error) {
+            } else if (syncState.cloudStatus == SyncStatus.error) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(syncState.errorMessage ?? 'Sync failed'),
+                  content: Text(syncState.errorMessage ?? 'Cloud sync failed'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              context.read<SyncCubit>().resetStatus();
+            }
+
+            // Local Backup Status Listener
+            if (syncState.localStatus == SyncStatus.success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Local backup operation successful!')),
+              );
+              _reloadAllData(context);
+              context.read<SyncCubit>().resetStatus();
+            } else if (syncState.localStatus == SyncStatus.error) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(syncState.errorMessage ?? 'Local backup failed'),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -53,14 +63,14 @@ class SyncSettingsGroup extends StatelessWidget {
                     title: 'Sign in with Google',
                     subtitle: 'Backup and sync your data',
                     iconColor: Colors.blue,
-                    trailing: syncState.status == SyncStatus.syncing
+                    trailing: syncState.cloudStatus == SyncStatus.syncing
                         ? const SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : null,
-                    onTap: syncState.status == SyncStatus.syncing
+                    onTap: syncState.cloudStatus == SyncStatus.syncing
                         ? null
                         : () {
                             context.read<SyncCubit>().signIn();
@@ -112,14 +122,14 @@ class SyncSettingsGroup extends StatelessWidget {
                     title: 'Sync Now',
                     subtitle: 'Upload and sync your data',
                     iconColor: Colors.teal,
-                    trailing: syncState.status == SyncStatus.syncing
+                    trailing: syncState.cloudStatus == SyncStatus.syncing
                         ? const SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : null,
-                    onTap: syncState.status == SyncStatus.syncing
+                    onTap: syncState.cloudStatus == SyncStatus.syncing
                         ? null
                         : () {
                             context.read<SyncCubit>().syncNow();
@@ -131,7 +141,7 @@ class SyncSettingsGroup extends StatelessWidget {
                     title: 'Restore (Append)',
                     subtitle: 'Add missing records from cloud',
                     iconColor: Colors.orange,
-                    onTap: syncState.status == SyncStatus.syncing
+                    onTap: syncState.cloudStatus == SyncStatus.syncing
                         ? null
                         : () => _showRestoreDialog(context),
                   ),
@@ -162,14 +172,14 @@ class SyncSettingsGroup extends StatelessWidget {
                   title: 'Create Local Backup',
                   subtitle: 'Save a backup file to your device',
                   iconColor: Colors.teal,
-                  trailing: syncState.status == SyncStatus.syncing
+                  trailing: syncState.localStatus == SyncStatus.syncing
                       ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : null,
-                  onTap: syncState.status == SyncStatus.syncing
+                  onTap: syncState.localStatus == SyncStatus.syncing
                       ? null
                       : () {
                           context.read<SyncCubit>().createLocalBackup();
@@ -181,7 +191,7 @@ class SyncSettingsGroup extends StatelessWidget {
                   title: 'Restore Local Backup',
                   subtitle: 'Restore from a local backup file',
                   iconColor: Colors.orange,
-                  onTap: syncState.status == SyncStatus.syncing
+                  onTap: syncState.localStatus == SyncStatus.syncing
                       ? null
                       : () => _showRestoreLocalDialog(context),
                 ),
@@ -191,7 +201,7 @@ class SyncSettingsGroup extends StatelessWidget {
                   title: 'Delete Local Backup',
                   subtitle: 'Remove the local backup file',
                   iconColor: Colors.red,
-                  onTap: syncState.status == SyncStatus.syncing
+                  onTap: syncState.localStatus == SyncStatus.syncing
                       ? null
                       : () => _showDeleteLocalDialog(context),
                 ),
@@ -314,5 +324,14 @@ class SyncSettingsGroup extends StatelessWidget {
     if (confirm == true && context.mounted) {
       context.read<SyncCubit>().deleteLocalBackup();
     }
+  }
+
+  void _reloadAllData(BuildContext context) {
+    context.read<ExpenseCubit>().loadExpenses();
+    context.read<CategoryCubit>().loadCategories();
+    context.read<BudgetCubit>().loadBudgets();
+    context.read<DebtCubit>().loadDebts();
+    context.read<ShoppingCubit>().loadShoppingLists();
+    context.read<ShortcutCubit>().loadShortcuts();
   }
 }
