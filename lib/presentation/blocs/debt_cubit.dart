@@ -74,8 +74,8 @@ class DebtState {
 class DebtCubit extends Cubit<DebtState> {
   static const String boxName = 'debts';
   static const String personBoxName = 'persons';
-  late Box<DebtModel> _box;
-  late Box<PersonModel> _personBox;
+  Box<DebtModel>? _box;
+  Box<PersonModel>? _personBox;
 
   DebtCubit() : super(DebtState(isLoading: true)) {
     Future.microtask(() => _init());
@@ -93,9 +93,13 @@ class DebtCubit extends Cubit<DebtState> {
   }
 
   void loadDebts() {
+    if (_box == null || _personBox == null) {
+      debugPrint('DebtCubit: Boxes not yet initialized');
+      return;
+    }
     emit(state.copyWith(
-      debts: _box.values.toList(),
-      persons: _personBox.values.toList(),
+      debts: _box!.values.toList(),
+      persons: _personBox!.values.toList(),
       isLoading: false,
     ));
   }
@@ -103,8 +107,8 @@ class DebtCubit extends Cubit<DebtState> {
   // Person Methods
   Future<void> addPerson(PersonModel person) async {
     try {
-      await _personBox.put(person.id, person);
-      emit(state.copyWith(persons: _personBox.values.toList()));
+      await _personBox!.put(person.id, person);
+      emit(state.copyWith(persons: _personBox!.values.toList()));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
     }
@@ -112,27 +116,23 @@ class DebtCubit extends Cubit<DebtState> {
 
   Future<void> deletePerson(String id) async {
     try {
-      final person = _personBox.get(id);
-      if (person == null) return;
+      // 1. Get the person's name before deleting to find their debts
+      final person = _personBox!.get(id);
+      if (person != null) {
+        // 2. Delete all debts associated with this person
+        final debtsToDelete =
+            _box!.values.where((d) => d.personId == id).toList();
+        for (var debt in debtsToDelete) {
+          await _box!.delete(debt.id);
+        }
 
-      // 1. Delete all debts for this person to keep totals accurate
-      final debtIdsToDelete = _box.values
-          .where((d) =>
-              d.personId == id ||
-              (d.personId == null && d.personName == person.name))
-          .map((d) => d.id)
-          .toList();
-
-      for (var debtId in debtIdsToDelete) {
-        await _box.delete(debtId);
+        // 3. Delete the person
+        await _personBox!.delete(id);
       }
 
-      // 2. Delete the person
-      await _personBox.delete(id);
-
       emit(state.copyWith(
-        debts: _box.values.toList(),
-        persons: _personBox.values.toList(),
+        debts: _box!.values.toList(),
+        persons: _personBox!.values.toList(),
       ));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
@@ -142,8 +142,8 @@ class DebtCubit extends Cubit<DebtState> {
   // Debt Methods
   Future<void> addDebt(DebtModel debt) async {
     try {
-      await _box.put(debt.id, debt);
-      emit(state.copyWith(debts: _box.values.toList()));
+      await _box!.put(debt.id, debt);
+      emit(state.copyWith(debts: _box!.values.toList()));
     } catch (e) {
       debugPrint('Error adding debt: $e');
       emit(state.copyWith(error: e.toString()));
@@ -152,8 +152,8 @@ class DebtCubit extends Cubit<DebtState> {
 
   Future<void> updateDebt(DebtModel debt) async {
     try {
-      await _box.put(debt.id, debt);
-      emit(state.copyWith(debts: _box.values.toList()));
+      await _box!.put(debt.id, debt);
+      emit(state.copyWith(debts: _box!.values.toList()));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
     }
@@ -161,16 +161,22 @@ class DebtCubit extends Cubit<DebtState> {
 
   Future<void> deleteDebt(String id) async {
     try {
-      await _box.delete(id);
-      emit(state.copyWith(debts: _box.values.toList()));
+      await _box!.delete(id);
+      emit(state.copyWith(debts: _box!.values.toList()));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
     }
   }
 
-  Future<void> togglePaidStatus(DebtModel debt) async {
-    final updatedDebt = debt.copyWith(isPaid: !debt.isPaid);
-    await _box.put(debt.id, updatedDebt);
-    emit(state.copyWith(debts: _box.values.toList()));
+  Future<void> toggleDebtPaid(String id) async {
+    try {
+      final debt = _box!.get(id);
+      if (debt != null) {
+        await _box!.put(id, debt.copyWith(isPaid: !debt.isPaid));
+        emit(state.copyWith(debts: _box!.values.toList()));
+      }
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
+    }
   }
 }
