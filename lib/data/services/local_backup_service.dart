@@ -68,6 +68,7 @@ class LocalBackupService {
   Future<void> setLastBackupTime(DateTime time) async {
     await _setLastBackupTime(time);
   }
+
   /// Get the last backup timestamp
   Future<DateTime?> getLastBackupTime() async {
     final timestamp = StorageService.settingsBox.get(_timestampKey);
@@ -158,7 +159,8 @@ class LocalBackupService {
     // Import processed SMS IDs (Metatdata)
     final processedSms = data['processed_sms'] as List<dynamic>? ?? [];
     for (var smsId in processedSms) {
-      if (smsId is String && !StorageService.processedSmsBox.containsKey(smsId)) {
+      if (smsId is String &&
+          !StorageService.processedSmsBox.containsKey(smsId)) {
         await StorageService.processedSmsBox.put(smsId, smsId);
       }
     }
